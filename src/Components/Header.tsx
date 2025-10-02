@@ -17,11 +17,7 @@ export default function Header() {
         
         {/* Left: Logo + Name */}
         <div className="flex items-center gap-2">
-          <img
-            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=purple&shade=500"
-            alt="Logo"
-            className="h-7 w-7"
-          />
+          <span className="font-bold text-lg tracking-wide text-white">R|D</span>
           <span className="font-bold text-lg tracking-wide text-white">
             Rahul Dev
           </span>
