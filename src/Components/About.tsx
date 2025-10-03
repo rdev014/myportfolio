@@ -46,7 +46,9 @@ export function AboutSection() {
             duration: 1.2,
             ease: "power2.out",
             scrollTrigger: { trigger: el, start: "top 85%", once: true },
-            onUpdate: () => (el.textContent = Math.round(obj.val).toString()),
+            onUpdate: () => {
+              el.textContent = Math.round(obj.val).toString();
+            },
           });
         });
       }
