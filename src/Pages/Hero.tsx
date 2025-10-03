@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { ArrowRightIcon, PlayIcon } from "@heroicons/react/24/outline";
 import StackPage from "../Components/TechSpreadSection";
 import { AboutSection } from "../Components/About";
+import { ProjectsSection } from "../Components/Projects";
 
 export default function HeroPage() {
   return (
@@ -11,6 +12,7 @@ export default function HeroPage() {
       <HeroSection />
       <StackPage/>  
       <AboutSection/>
+      <ProjectsSection/>
     </main>
   );
 }
