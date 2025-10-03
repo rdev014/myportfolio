@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -21,7 +19,7 @@ const techs: Tech[] = [
   { name: "WordPress", logo: "https://cdn.simpleicons.org/wordpress/21759B", color: "#21759B", category: "CMS", level: 0.8 },
   { name: "Elementor", logo: "https://cdn.simpleicons.org/elementor/92003B", color: "#92003B", category: "CMS", level: 0.78 },
   { name: "GitHub", logo: "https://cdn.simpleicons.org/github/ffffff", color: "#FFFFFF", category: "Tooling", level: 0.9 },
-  { name: "Git", logo: "https://cdn.simpleicons.org/git/F05032", color: "#F05032", category: "Tooling", level: 0.9 },
+  { name: "Git", logo: "https://cdn.simpleicons.org/git/F05032", color: "#F05032", category: "Tooling", level: 0.6 },
 
   // Existing stack (refined)
   { name: "React", logo: "https://cdn.simpleicons.org/react/61DAFB", color: "#61DAFB", category: "Framework", level: 0.92 },
