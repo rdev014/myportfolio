@@ -4,21 +4,38 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-type Tech = { name: string; logo: string; color: string };
+type Tech = {
+  name: string;
+  logo: string;
+  color: string;
+  category: string;
+  level: number; // 0..1 (for the proficiency bar)
+};
 
 const techs: Tech[] = [
-  { name: "React", logo: "https://cdn.simpleicons.org/react/61DAFB", color: "#61DAFB" },
-  { name: "Next.js", logo: "https://cdn.simpleicons.org/nextdotjs/000000", color: "#FFFFFF" },
-  { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", color: "#3178C6" },
-  { name: "Tailwind", logo: "https://cdn.simpleicons.org/tailwindcss/38BDF8", color: "#38BDF8" },
-  { name: "GSAP", logo: "https://cdn.simpleicons.org/greensock/88CE02", color: "#88CE02" },
-  { name: "Node.js", logo: "https://cdn.simpleicons.org/nodedotjs/5FA04E", color: "#5FA04E" },
-  { name: "Vite", logo: "https://cdn.simpleicons.org/vite/646CFF", color: "#646CFF" },
-  { name: "Redux", logo: "https://cdn.simpleicons.org/redux/764ABC", color: "#764ABC" },
-  { name: "Zustand", logo: "https://cdn.simpleicons.org/zustand/000000", color: "#FFBF69" },
-  { name: "GraphQL", logo: "https://cdn.simpleicons.org/graphql/E10098", color: "#E10098" },
-  { name: "Jest", logo: "https://cdn.simpleicons.org/jest/C21325", color: "#C21325" },
-  { name: "Cypress", logo: "https://cdn.simpleicons.org/cypress/69D3A7", color: "#69D3A7" },
+  // Requested additions
+  { name: "HTML5", logo: "https://cdn.simpleicons.org/html5/E34F26", color: "#E34F26", category: "Language", level: 0.96 },
+  { name: "CSS3", logo: "https://cdn.simpleicons.org/css3/1572B6", color: "#1572B6", category: "Style", level: 0.94 },
+  { name: "JavaScript", logo: "https://cdn.simpleicons.org/javascript/F7DF1E", color: "#F7DF1E", category: "Language", level: 0.94 },
+  { name: "Bootstrap", logo: "https://cdn.simpleicons.org/bootstrap/7952B3", color: "#7952B3", category: "Style", level: 0.82 },
+  { name: "WordPress", logo: "https://cdn.simpleicons.org/wordpress/21759B", color: "#21759B", category: "CMS", level: 0.8 },
+  { name: "Elementor", logo: "https://cdn.simpleicons.org/elementor/92003B", color: "#92003B", category: "CMS", level: 0.78 },
+  { name: "GitHub", logo: "https://cdn.simpleicons.org/github/ffffff", color: "#FFFFFF", category: "Tooling", level: 0.9 },
+  { name: "Git", logo: "https://cdn.simpleicons.org/git/F05032", color: "#F05032", category: "Tooling", level: 0.9 },
+
+  // Existing stack (refined)
+  { name: "React", logo: "https://cdn.simpleicons.org/react/61DAFB", color: "#61DAFB", category: "Framework", level: 0.92 },
+  { name: "Next.js", logo: "https://cdn.simpleicons.org/nextdotjs/ffffff", color: "#FFFFFF", category: "Framework", level: 0.9 },
+  { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", color: "#3178C6", category: "Language", level: 0.9 },
+  { name: "Tailwind", logo: "https://cdn.simpleicons.org/tailwindcss/38BDF8", color: "#38BDF8", category: "Style", level: 0.9 },
+  { name: "GSAP", logo: "https://cdn.simpleicons.org/greensock/88CE02", color: "#88CE02", category: "Animation", level: 0.88 },
+  { name: "Node.js", logo: "https://cdn.simpleicons.org/nodedotjs/5FA04E", color: "#5FA04E", category: "Runtime", level: 0.86 },
+  { name: "Vite", logo: "https://cdn.simpleicons.org/vite/646CFF", color: "#646CFF", category: "Build", level: 0.87 },
+  { name: "Redux", logo: "https://cdn.simpleicons.org/redux/764ABC", color: "#764ABC", category: "State", level: 0.82 },
+  { name: "Zustand", logo: "https://cdn.simpleicons.org/zustand/000000", color: "#FFBF69", category: "State", level: 0.8 },
+  { name: "GraphQL", logo: "https://cdn.simpleicons.org/graphql/E10098", color: "#E10098", category: "Data", level: 0.78 },
+  { name: "Jest", logo: "https://cdn.simpleicons.org/jest/C21325", color: "#C21325", category: "Testing", level: 0.8 },
+  { name: "Cypress", logo: "https://cdn.simpleicons.org/cypress/69D3A7", color: "#69D3A7", category: "Testing", level: 0.75 },
 ];
 
 export default function StackPage() {
@@ -39,27 +56,56 @@ function TechSpreadSection() {
 
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
+      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      // Desktop: pinned scrollytelling, simple dark stage
+      // Helpers
+      const rect = () => stageRef.current!.getBoundingClientRect();
+
+      // Sunflower spread (adapts to any count)
+      const computeSpread = () => {
+        const r = rect();
+        const count = cardsRef.current.length;
+        const minDim = Math.min(r.width, r.height);
+        const radiusMax = minDim * 0.38;
+        const golden = Math.PI * (3 - Math.sqrt(5)); // ~2.39996 rad (137.5°)
+
+        return Array.from({ length: count }, (_, i) => {
+          const t = i + 1;
+          const radius = radiusMax * Math.sqrt(t / count);
+          const angle = t * golden;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          const rot = Math.sin(t) * 8;
+          return { x, y, r: rot };
+        });
+      };
+
+      // Grid positions (centered)
+      const gridPos = (i: number) => {
+        const s = rect();
+        const cols = 5; // tweak if you prefer 4
+        const rows = Math.ceil(techs.length / cols);
+        const sample = cardsRef.current[0] as HTMLElement | undefined;
+        const cw = sample?.offsetWidth ?? 232;
+        const ch = sample?.offsetHeight ?? 92;
+        const gap = Math.round(Math.max(16, Math.min(28, s.width * 0.018)));
+        const gridW = cols * cw + (cols - 1) * gap;
+        const gridH = rows * ch + (rows - 1) * gap;
+        const startX = -gridW / 2 + cw / 2;
+        const startY = -gridH / 2 + ch / 2;
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        return {
+          x: startX + col * (cw + gap),
+          y: startY + row * (ch + gap),
+        };
+      };
+
+      // Desktop: pinned scrollytelling (stack -> spread -> grid)
       mm.add("(min-width: 1024px)", () => {
         const stage = stageRef.current!;
-        const rect = () => stage.getBoundingClientRect();
 
-        const targets = [
-          { x: -0.36, y: -0.22, r: -10 },
-          { x: -0.18, y: -0.32, r: -4 },
-          { x: 0.04, y: -0.28, r: 3 },
-          { x: 0.28, y: -0.22, r: 8 },
-          { x: -0.34, y: 0.02, r: -6 },
-          { x: -0.12, y: 0.08, r: -2 },
-          { x: 0.14, y: 0.1, r: 2 },
-          { x: 0.36, y: 0.06, r: 6 },
-          { x: -0.28, y: 0.28, r: -4 },
-          { x: -0.04, y: 0.26, r: 0 },
-          { x: 0.22, y: 0.3, r: 4 },
-          { x: 0.42, y: 0.24, r: 10 },
-        ];
-
+        // Initial state: stacked center
         gsap.set(cardsRef.current, {
           x: 0,
           y: 0,
@@ -71,50 +117,56 @@ function TechSpreadSection() {
           force3D: true,
         });
 
-        // Subtle float loop
-        cardsRef.current.forEach((el, i) => {
-          gsap.to(el, {
-            yPercent: i % 2 === 0 ? 2 : -2,
-            duration: 3 + (i % 3),
-            ease: "sine.inOut",
-            repeat: -1,
-            yoyo: true,
-            force3D: true,
-          });
-        });
-
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: sectionRef.current,
             start: "top top",
-            end: "+=160%",
-            scrub: 0.3,
+            end: "+=200%",
+            scrub: 0.35,
             pin: true,
             anticipatePin: 1,
+            invalidateOnRefresh: true,
           },
-          defaults: { ease: "power1.out" },
+          defaults: { ease: "power2.out" },
         });
 
-        // Stage reveal (no gradients, just a crisp focus)
+        // Stage reveal
         tl.fromTo(
           stage,
           { scale: 0.985, filter: "blur(2px) brightness(0.95)" },
-          { scale: 1, filter: "blur(0px) brightness(1)", duration: 0.5 },
+          { scale: 1, filter: "blur(0px) brightness(1)", duration: prefersReduced ? 0.2 : 0.6 },
           0
         );
 
-        // Cards fade + spread
-        tl.to(cardsRef.current, { opacity: 1, scale: 1, duration: 0.3, stagger: 0.04 }, 0).to(
+        // Fade in stack
+        tl.to(cardsRef.current, { opacity: 1, scale: 1, duration: prefersReduced ? 0.2 : 0.35, stagger: 0.03 }, 0.05);
+
+        // Spread into constellation
+        tl.to(
           cardsRef.current,
           {
-            x: (i) => (targets[i] ? targets[i].x * rect().width : 0),
-            y: (i) => (targets[i] ? targets[i].y * rect().height : 0),
-            rotate: (i) => targets[i]?.r ?? 0,
-            duration: 1.2,
-            stagger: 0.06,
+            x: (i) => computeSpread()[i]?.x ?? 0,
+            y: (i) => computeSpread()[i]?.y ?? 0,
+            rotate: (i) => computeSpread()[i]?.r ?? 0,
+            duration: prefersReduced ? 0.3 : 1.2,
+            stagger: { each: 0.04, from: "center" },
             force3D: true,
           },
-          0.05
+          0.1
+        );
+
+        // Settle into a centered grid
+        tl.to(
+          cardsRef.current,
+          {
+            x: (i) => gridPos(i).x,
+            y: (i) => gridPos(i).y,
+            rotate: 0,
+            duration: prefersReduced ? 0.3 : 1.0,
+            stagger: { each: 0.03, from: "center" },
+            force3D: true,
+          },
+          0.75
         );
 
         const ro = new ResizeObserver(() => ScrollTrigger.refresh());
@@ -122,30 +174,42 @@ function TechSpreadSection() {
         return () => ro.disconnect();
       });
 
-      // Mobile / tablet: no pin, grid reveal
+      // Mobile / tablet: crisp grid reveal
       mm.add("(max-width: 1023px)", () => {
         gsap.from(".tech-grid-item", {
-          y: 16,
+          y: 18,
           opacity: 0,
           stagger: 0.06,
-          duration: 0.5,
+          duration: prefersReduced ? 0.25 : 0.5,
           ease: "power2.out",
           scrollTrigger: { trigger: sectionRef.current, start: "top 75%" },
           force3D: true,
         });
       });
 
-      // Hover micro-lift
+      // Hover micro-lift (desktop)
+      const enters: Array<(e: MouseEvent) => void> = [];
+      const leaves: Array<(e: MouseEvent) => void> = [];
       cardsRef.current.forEach((card) => {
-        card.addEventListener("mouseenter", () => {
-          gsap.to(card, { yPercent: "-=2", scale: 1.02, duration: 0.25, ease: "power2.out", force3D: true });
-        });
-        card.addEventListener("mouseleave", () => {
-          gsap.to(card, { yPercent: "+=2", scale: 1, duration: 0.35, ease: "power2.out", force3D: true });
-        });
+        const onEnter = () => {
+          gsap.to(card, { yPercent: "-=2", duration: 0.25, ease: "power2.out", force3D: true });
+        };
+        const onLeave = () => {
+          gsap.to(card, { yPercent: "+=2", duration: 0.35, ease: "power2.out", force3D: true });
+        };
+        enters.push(onEnter);
+        leaves.push(onLeave);
+        card.addEventListener("mouseenter", onEnter);
+        card.addEventListener("mouseleave", onLeave);
       });
 
-      return () => mm.revert();
+      return () => {
+        cardsRef.current.forEach((card, i) => {
+          card.removeEventListener("mouseenter", enters[i]);
+          card.removeEventListener("mouseleave", leaves[i]);
+        });
+        mm.revert();
+      };
     }, sectionRef);
 
     return () => ctx.revert();
@@ -153,7 +217,7 @@ function TechSpreadSection() {
 
   return (
     <section ref={sectionRef} className="relative">
-      {/* Clean dark backdrop — no gradients */}
+      {/* Clean dark backdrop */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0b0d10]" />
 
       <div className="mx-auto max-w-6xl px-6 py-24">
@@ -163,29 +227,38 @@ function TechSpreadSection() {
             Tech that powers my builds
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-zinc-400">
-            A curated stack for speed, DX, and delightful UX — arranged as a crisp constellation.
+            Purposeful motion: stack → constellation → grid. Crisp, tactile cards on a simple dark canvas.
           </p>
           <div className="mt-6">
             <a href="/hero" className="text-sm text-indigo-400 hover:text-indigo-300 transition">← Back to Hero</a>
           </div>
         </header>
 
-        {/* Desktop: pinned spread stage (simple dark panel) */}
+        {/* Desktop: pinned stage */}
         <div className="relative hidden lg:block">
-          <div className="relative h-[82vh] overflow-visible rounded-3xl border border-white/10 bg-[#0b0d10] p-2 ring-1 ring-white/5">
+          <div className="relative h-[86vh] overflow-visible rounded-3xl border border-white/10 bg-[#0b0d10] p-2 ring-1 ring-white/5">
             <div
               ref={stageRef}
               className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d10]"
             >
-              {/* ultra-subtle texture (optional) */}
+              {/* subtle grid overlay for premium feel */}
               <div
-                className="pointer-events-none absolute inset-0 opacity-[0.06]"
+                className="pointer-events-none absolute inset-0 opacity-[0.18]"
                 style={{
                   backgroundImage:
-                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0.25'/></feComponentTransfer></filter><rect width='120' height='120' filter='url(%23n)' /></svg>\")",
+                    "linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)",
+                  backgroundSize: "40px 40px, 40px 40px",
                 }}
               />
-
+              {/* ultra-subtle noise */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.04]"
+                style={{
+                  backgroundImage:
+                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0.22'/></feComponentTransfer></filter><rect width='160' height='160' filter='url(%23n)' /></svg>\")",
+                }}
+              />
+              {/* Cards */}
               {techs.map((t, i) => (
                 <div
                   key={t.name}
@@ -199,8 +272,8 @@ function TechSpreadSection() {
           </div>
         </div>
 
-        {/* Mobile/tablet grid */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
+        {/* Mobile / tablet grid */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:hidden">
           {techs.map((t) => (
             <div key={t.name} className="tech-grid-item">
               <TechCard tech={t} />
@@ -213,7 +286,7 @@ function TechSpreadSection() {
 }
 
 function TechCard({ tech }: { tech: Tech }) {
-  // Pointer-based 3D tilt + moving specular highlight
+  // 3D tilt + glare
   const handleMove: React.MouseEventHandler<HTMLElement> = (e) => {
     const el = e.currentTarget as HTMLElement;
     const rect = el.getBoundingClientRect();
@@ -241,7 +314,6 @@ function TechCard({ tech }: { tech: Tech }) {
       onMouseLeave={handleLeave}
       className="group relative select-none rounded-2xl border border-white/10 bg-[#0e1116] p-3 ring-1 ring-white/10 sm:p-4"
       style={{
-        // layered shadows for realistic depth + subtle color underglow
         boxShadow: `
           0 30px 60px -24px rgba(0,0,0,0.55),
           0 12px 24px -12px rgba(0,0,0,0.5),
@@ -249,13 +321,12 @@ function TechCard({ tech }: { tech: Tech }) {
           0 0 0 1px rgba(255,255,255,0.06),
           0 14px 30px -14px ${hexToRgba(tech.color, 0.25)}
         `,
-        transform:
-          "translateZ(0) rotateX(var(--rx, 0)) rotateY(var(--ry, 0))",
+        transform: "translateZ(0) rotateX(var(--rx, 0)) rotateY(var(--ry, 0))",
         transformStyle: "preserve-3d",
         transition: "transform 180ms ease, box-shadow 220ms ease, background-color 220ms ease",
       }}
     >
-      {/* top-edge highlight + inner bevel */}
+      {/* inner bevel */}
       <div
         className="pointer-events-none absolute inset-0 rounded-2xl"
         style={{
@@ -263,7 +334,7 @@ function TechCard({ tech }: { tech: Tech }) {
             "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.5)",
         }}
       />
-      {/* moving specular highlight (white sheen) */}
+      {/* glare */}
       <div
         className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-150 group-hover:opacity-100"
         style={{
@@ -272,7 +343,7 @@ function TechCard({ tech }: { tech: Tech }) {
           mixBlendMode: "screen",
         }}
       />
-      {/* ultra-subtle noise on the card face */}
+      {/* noise */}
       <div
         className="pointer-events-none absolute inset-0 rounded-2xl opacity-[0.065]"
         style={{
@@ -285,7 +356,6 @@ function TechCard({ tech }: { tech: Tech }) {
         <div
           className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f1319] text-black ring-1 ring-white/10 shadow-inner"
           style={{
-            // enamel badge vibe with color glow
             boxShadow: `
               inset 0 1px 0 rgba(255,255,255,0.06),
               inset 0 -2px 8px rgba(0,0,0,0.6),
@@ -293,7 +363,6 @@ function TechCard({ tech }: { tech: Tech }) {
             `,
           }}
         >
-          {/* glossy edge highlight */}
           <div
             className="pointer-events-none absolute inset-0 rounded-xl"
             style={{
@@ -312,16 +381,16 @@ function TechCard({ tech }: { tech: Tech }) {
         </div>
         <div>
           <div className="text-sm font-semibold text-white">{tech.name}</div>
-          <div className="text-[11px] text-zinc-400">Core tool</div>
+          <div className="text-[11px] text-zinc-400">{tech.category}</div>
         </div>
       </div>
 
-      {/* Progress bar with subtle glow */}
+      {/* Dynamic proficiency bar */}
       <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
-          className="h-full origin-left rounded-full transition-transform duration-600 ease-out group-hover:duration-300"
+          className="h-full rounded-full transition-[width] duration-700 ease-out group-hover:duration-300"
           style={{
-            transform: "scaleX(0.72)",
+            width: `${Math.round(tech.level * 100)}%`,
             backgroundColor: hexToRgba(tech.color, 0.9),
             boxShadow: `0 0 22px ${hexToRgba(tech.color, 0.35)}`,
           }}
@@ -333,9 +402,10 @@ function TechCard({ tech }: { tech: Tech }) {
 
 function hexToRgba(hex: string, alpha = 1) {
   const clean = hex.replace("#", "");
-  const bigint = parseInt(clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean, 16);
+  const h = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const bigint = parseInt(h, 16);
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
-  return `rgba(${r}, ${b ? g : 0}, ${b}, ${alpha})`;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
