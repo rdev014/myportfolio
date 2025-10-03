@@ -5,6 +5,7 @@ import { ArrowRightIcon, PlayIcon } from "@heroicons/react/24/outline";
 import StackPage from "../Components/TechSpreadSection";
 import { AboutSection } from "../Components/About";
 import { ProjectsSection } from "../Components/Projects";
+import { ContactSection } from "../Components/Contact";
 
 export default function HeroPage() {
   return (
@@ -13,6 +14,7 @@ export default function HeroPage() {
       <StackPage/>  
       <AboutSection/>
       <ProjectsSection/>
+      <ContactSection/>
     </main>
   );
 }
