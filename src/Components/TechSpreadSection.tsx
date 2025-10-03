@@ -4,68 +4,156 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-type Tech = { name: string; logo: string; color: string; level: number };
+type Tech = { name: string; logo: string; color: string };
 
 const techs: Tech[] = [
-  { name: "HTML5", logo: "https://cdn.simpleicons.org/html5/E34F26", color: "#E34F26", level: 0.95 },
-  { name: "CSS3", logo: "https://cdn.simpleicons.org/css3/1572B6", color: "#1572B6", level: 0.93 },
-  { name: "JavaScript", logo: "https://cdn.simpleicons.org/javascript/F7DF1E", color: "#F7DF1E", level: 0.94 },
-  { name: "React", logo: "https://cdn.simpleicons.org/react/61DAFB", color: "#61DAFB", level: 0.92 },
-  { name: "Next.js", logo: "https://cdn.simpleicons.org/nextdotjs/ffffff", color: "#FFFFFF", level: 0.9 },
-  { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", color: "#3178C6", level: 0.9 },
-  { name: "Tailwind", logo: "https://cdn.simpleicons.org/tailwindcss/38BDF8", color: "#38BDF8", level: 0.9 },
-  { name: "Node.js", logo: "https://cdn.simpleicons.org/nodedotjs/5FA04E", color: "#5FA04E", level: 0.86 },
-  { name: "GSAP", logo: "https://cdn.simpleicons.org/greensock/88CE02", color: "#88CE02", level: 0.88 },
-  { name: "Vite", logo: "https://cdn.simpleicons.org/vite/646CFF", color: "#646CFF", level: 0.87 },
-  { name: "Redux", logo: "https://cdn.simpleicons.org/redux/764ABC", color: "#764ABC", level: 0.82 },
-  { name: "Zustand", logo: "https://cdn.simpleicons.org/zustand/ffffff", color: "#FFBF69", level: 0.8 },
-  { name: "GraphQL", logo: "https://cdn.simpleicons.org/graphql/E10098", color: "#E10098", level: 0.78 },
-  { name: "Jest", logo: "https://cdn.simpleicons.org/jest/C21325", color: "#C21325", level: 0.8 },
-  { name: "Cypress", logo: "https://cdn.simpleicons.org/cypress/69D3A7", color: "#69D3A7", level: 0.75 },
-  { name: "Git", logo: "https://cdn.simpleicons.org/git/F05032", color: "#F05032", level: 0.9 },
+  { name: "React", logo: "https://cdn.simpleicons.org/react/61DAFB", color: "#61DAFB" },
+  { name: "Next.js", logo: "https://cdn.simpleicons.org/nextdotjs/000000", color: "#FFFFFF" },
+  { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", color: "#3178C6" },
+  { name: "Tailwind", logo: "https://cdn.simpleicons.org/tailwindcss/38BDF8", color: "#38BDF8" },
+  { name: "GSAP", logo: "https://cdn.simpleicons.org/greensock/88CE02", color: "#88CE02" },
+  { name: "Node.js", logo: "https://cdn.simpleicons.org/nodedotjs/5FA04E", color: "#5FA04E" },
+  { name: "Vite", logo: "https://cdn.simpleicons.org/vite/646CFF", color: "#646CFF" },
+  { name: "Redux", logo: "https://cdn.simpleicons.org/redux/764ABC", color: "#764ABC" },
+  { name: "Zustand", logo: "https://cdn.simpleicons.org/zustand/000000", color: "#FFBF69" },
+  { name: "GraphQL", logo: "https://cdn.simpleicons.org/graphql/E10098", color: "#E10098" },
+  { name: "Jest", logo: "https://cdn.simpleicons.org/jest/C21325", color: "#C21325" },
+  { name: "Cypress", logo: "https://cdn.simpleicons.org/cypress/69D3A7", color: "#69D3A7" },
 ];
 
 export default function StackPage() {
   return (
     <main className="bg-[#0b0d10] text-white overflow-x-clip">
-      <TechGridSection />
+      <TechSpreadSection />
     </main>
   );
 }
 
-function TechGridSection() {
+function TechSpreadSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement[]>([]);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      const cards = gsap.utils.toArray<HTMLElement>(".tech-card");
+      const mm = gsap.matchMedia();
 
-      // Entry reveal: crisp, no float
-      gsap.set(cards, { transformPerspective: 800 });
-      gsap.from(cards, {
-        y: 26,
-        opacity: 0,
-        scale: 0.98,
-        rotateX: -6,
-        duration: 0.6,
-        ease: "power3.out",
-        stagger: { each: 0.055, from: "edges" },
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 70%",
-          toggleActions: "play none none none",
-        },
+      // Desktop: pinned scrollytelling, simple dark stage
+      mm.add("(min-width: 1024px)", () => {
+        const stage = stageRef.current!;
+        const rect = () => stage.getBoundingClientRect();
+
+        const targets = [
+          { x: -0.36, y: -0.22, r: -10 },
+          { x: -0.18, y: -0.32, r: -4 },
+          { x: 0.04, y: -0.28, r: 3 },
+          { x: 0.28, y: -0.22, r: 8 },
+          { x: -0.34, y: 0.02, r: -6 },
+          { x: -0.12, y: 0.08, r: -2 },
+          { x: 0.14, y: 0.1, r: 2 },
+          { x: 0.36, y: 0.06, r: 6 },
+          { x: -0.28, y: 0.28, r: -4 },
+          { x: -0.04, y: 0.26, r: 0 },
+          { x: 0.22, y: 0.3, r: 4 },
+          { x: 0.42, y: 0.24, r: 10 },
+        ];
+
+        gsap.set(cardsRef.current, {
+          x: 0,
+          y: 0,
+          rotate: 0,
+          scale: 0.94,
+          opacity: 0,
+          z: (i: number) => i,
+          transformOrigin: "center",
+          force3D: true,
+        });
+
+        // Subtle float loop
+        cardsRef.current.forEach((el, i) => {
+          gsap.to(el, {
+            yPercent: i % 2 === 0 ? 2 : -2,
+            duration: 3 + (i % 3),
+            ease: "sine.inOut",
+            repeat: -1,
+            yoyo: true,
+            force3D: true,
+          });
+        });
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top top",
+            end: "+=160%",
+            scrub: 0.3,
+            pin: true,
+            anticipatePin: 1,
+          },
+          defaults: { ease: "power1.out" },
+        });
+
+        // Stage reveal (no gradients, just a crisp focus)
+        tl.fromTo(
+          stage,
+          { scale: 0.985, filter: "blur(2px) brightness(0.95)" },
+          { scale: 1, filter: "blur(0px) brightness(1)", duration: 0.5 },
+          0
+        );
+
+        // Cards fade + spread
+        tl.to(cardsRef.current, { opacity: 1, scale: 1, duration: 0.3, stagger: 0.04 }, 0).to(
+          cardsRef.current,
+          {
+            x: (i) => (targets[i] ? targets[i].x * rect().width : 0),
+            y: (i) => (targets[i] ? targets[i].y * rect().height : 0),
+            rotate: (i) => targets[i]?.r ?? 0,
+            duration: 1.2,
+            stagger: 0.06,
+            force3D: true,
+          },
+          0.05
+        );
+
+        const ro = new ResizeObserver(() => ScrollTrigger.refresh());
+        ro.observe(stage);
+        return () => ro.disconnect();
       });
-    }, gridRef);
+
+      // Mobile / tablet: no pin, grid reveal
+      mm.add("(max-width: 1023px)", () => {
+        gsap.from(".tech-grid-item", {
+          y: 16,
+          opacity: 0,
+          stagger: 0.06,
+          duration: 0.5,
+          ease: "power2.out",
+          scrollTrigger: { trigger: sectionRef.current, start: "top 75%" },
+          force3D: true,
+        });
+      });
+
+      // Hover micro-lift
+      cardsRef.current.forEach((card) => {
+        card.addEventListener("mouseenter", () => {
+          gsap.to(card, { yPercent: "-=2", scale: 1.02, duration: 0.25, ease: "power2.out", force3D: true });
+        });
+        card.addEventListener("mouseleave", () => {
+          gsap.to(card, { yPercent: "+=2", scale: 1, duration: 0.35, ease: "power2.out", force3D: true });
+        });
+      });
+
+      return () => mm.revert();
+    }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
     <section ref={sectionRef} className="relative">
+      {/* Clean dark backdrop — no gradients */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0b0d10]" />
 
       <div className="mx-auto max-w-6xl px-6 py-24">
@@ -75,17 +163,48 @@ function TechGridSection() {
             Tech that powers my builds
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-zinc-400">
-            Responsive 4×4 grid on desktop, smooth reveal, and realistic 3D cards — no floating.
+            A curated stack for speed, DX, and delightful UX — arranged as a crisp constellation.
           </p>
+          <div className="mt-6">
+            <a href="/hero" className="text-sm text-indigo-400 hover:text-indigo-300 transition">← Back to Hero</a>
+          </div>
         </header>
 
-        {/* Responsive grid: 2 / 3 / 4 columns => 4×4 on desktop */}
-        <div
-          ref={gridRef}
-          className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
-        >
+        {/* Desktop: pinned spread stage (simple dark panel) */}
+        <div className="relative hidden lg:block">
+          <div className="relative h-[82vh] overflow-visible rounded-3xl border border-white/10 bg-[#0b0d10] p-2 ring-1 ring-white/5">
+            <div
+              ref={stageRef}
+              className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0b0d10]"
+            >
+              {/* ultra-subtle texture (optional) */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.06]"
+                style={{
+                  backgroundImage:
+                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0.25'/></feComponentTransfer></filter><rect width='120' height='120' filter='url(%23n)' /></svg>\")",
+                }}
+              />
+
+              {techs.map((t, i) => (
+                <div
+                  key={t.name}
+                  ref={(el) => { if (el) cardsRef.current[i] = el; }}
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 will-change-transform"
+                >
+                  <TechCard tech={t} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile/tablet grid */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:hidden">
           {techs.map((t) => (
-            <TechCard key={t.name} tech={t} />
+            <div key={t.name} className="tech-grid-item">
+              <TechCard tech={t} />
+            </div>
           ))}
         </div>
       </div>
@@ -94,132 +213,92 @@ function TechGridSection() {
 }
 
 function TechCard({ tech }: { tech: Tech }) {
-  // Tunables
-  const TILT_X = 10; // deg up/down
-  const TILT_Y = 14; // deg left/right
-  const MAGNET = 6;  // px translate toward cursor
-
+  // Pointer-based 3D tilt + moving specular highlight
   const handleMove: React.MouseEventHandler<HTMLElement> = (e) => {
     const el = e.currentTarget as HTMLElement;
     const rect = el.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
-
-    const rx = (0.5 - y) * TILT_X;
-    const ry = (x - 0.5) * TILT_Y;
-    const tx = (x - 0.5) * MAGNET;
-    const ty = (y - 0.5) * MAGNET;
-
+    const rx = (0.5 - y) * 8;
+    const ry = (x - 0.5) * 10;
     el.style.setProperty("--rx", `${rx}deg`);
     el.style.setProperty("--ry", `${ry}deg`);
-    el.style.setProperty("--tx", `${tx}px`);
-    el.style.setProperty("--ty", `${ty}px`);
     el.style.setProperty("--mx", `${(x * 100).toFixed(2)}%`);
     el.style.setProperty("--my", `${(y * 100).toFixed(2)}%`);
-  };
-
-  const handleEnter: React.MouseEventHandler<HTMLElement> = (e) => {
-    const el = e.currentTarget as HTMLElement;
-    el.style.setProperty("--scale", "1.012");
   };
 
   const handleLeave: React.MouseEventHandler<HTMLElement> = (e) => {
     const el = e.currentTarget as HTMLElement;
     el.style.setProperty("--rx", `0deg`);
     el.style.setProperty("--ry", `0deg`);
-    el.style.setProperty("--tx", `0px`);
-    el.style.setProperty("--ty", `0px`);
     el.style.setProperty("--mx", `50%`);
     el.style.setProperty("--my", `50%`);
-    el.style.setProperty("--scale", "1");
-  };
-
-  const handleDown: React.MouseEventHandler<HTMLElement> = (e) => {
-    (e.currentTarget as HTMLElement).style.setProperty("--scale", "0.99");
-  };
-  const handleUp: React.MouseEventHandler<HTMLElement> = (e) => {
-    (e.currentTarget as HTMLElement).style.setProperty("--scale", "1.012");
   };
 
   return (
     <article
       onMouseMove={handleMove}
-      onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
-      onMouseDown={handleDown}
-      onMouseUp={handleUp}
-      className="tech-card group relative isolate w-full select-none rounded-2xl border border-white/10 bg-[#0e1116] p-3 ring-1 ring-white/10 sm:p-4"
+      className="group relative select-none rounded-2xl border border-white/10 bg-[#0e1116] p-3 ring-1 ring-white/10 sm:p-4"
       style={{
-        transformStyle: "preserve-3d",
-        transform:
-          "translate3d(var(--tx,0), var(--ty,0), 0) rotateX(var(--rx,0)) rotateY(var(--ry,0)) scale(var(--scale,1))",
-        transition: "transform 160ms ease, box-shadow 220ms ease, background-color 220ms ease",
+        // layered shadows for realistic depth + subtle color underglow
         boxShadow: `
-          0 42px 60px -28px rgba(0,0,0,0.65),
-          0 16px 30px -16px rgba(0,0,0,0.55),
+          0 30px 60px -24px rgba(0,0,0,0.55),
+          0 12px 24px -12px rgba(0,0,0,0.5),
           0 2px 6px rgba(0,0,0,0.5),
-          0 0 0 1px rgba(255,255,255,0.06)
+          0 0 0 1px rgba(255,255,255,0.06),
+          0 14px 30px -14px ${hexToRgba(tech.color, 0.25)}
         `,
+        transform:
+          "translateZ(0) rotateX(var(--rx, 0)) rotateY(var(--ry, 0))",
+        transformStyle: "preserve-3d",
+        transition: "transform 180ms ease, box-shadow 220ms ease, background-color 220ms ease",
       }}
     >
-      {/* Shadow catcher */}
+      {/* top-edge highlight + inner bevel */}
       <div
-        aria-hidden
-        className="pointer-events-none absolute -inset-x-6 -bottom-6 -top-4 -z-10"
-        style={{
-          transform: "translate(var(--tx,0), var(--ty,0))",
-          background:
-            "radial-gradient(60% 50% at 50% 65%, rgba(0,0,0,0.6), rgba(0,0,0,0.28) 45%, transparent 70%)",
-          filter: "blur(16px)",
-        }}
-      />
-
-      {/* Inner bevel + subtle texture */}
-      <div
-        aria-hidden
         className="pointer-events-none absolute inset-0 rounded-2xl"
         style={{
           boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.5), inset 0 10px 20px -18px rgba(255,255,255,0.12), inset 0 -16px 24px -24px rgba(0,0,0,0.8)",
+            "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.5)",
         }}
       />
+      {/* moving specular highlight (white sheen) */}
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-2xl opacity-[0.055]"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0.22'/></feComponentTransfer></filter><rect width='180' height='180' filter='url(%23n)' /></svg>\")",
-        }}
-      />
-      {/* Specular highlight follows cursor */}
-      <div
-        aria-hidden
         className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-150 group-hover:opacity-100"
         style={{
           background:
-            "radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.08), transparent 60%)",
+            "radial-gradient(260px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.08), transparent 60%)",
           mixBlendMode: "screen",
         }}
       />
+      {/* ultra-subtle noise on the card face */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-2xl opacity-[0.065]"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0.25'/></feComponentTransfer></filter><rect width='120' height='120' filter='url(%23n)' /></svg>\")",
+        }}
+      />
 
-      <div className="flex items-center gap-3" style={{ transformStyle: "preserve-3d" }}>
+      <div className="flex items-center gap-3">
         <div
-          className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f1319] ring-1 ring-white/10 shadow-inner"
+          className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[#0f1319] text-black ring-1 ring-white/10 shadow-inner"
           style={{
-            transform: "translateZ(24px)",
+            // enamel badge vibe with color glow
             boxShadow: `
               inset 0 1px 0 rgba(255,255,255,0.06),
-              inset 0 -2px 10px rgba(0,0,0,0.65),
-              0 10px 24px -12px ${hexToRgba(tech.color, 0.45)}
+              inset 0 -2px 8px rgba(0,0,0,0.6),
+              0 8px 24px -8px ${hexToRgba(tech.color, 0.5)}
             `,
           }}
         >
+          {/* glossy edge highlight */}
           <div
-            aria-hidden
             className="pointer-events-none absolute inset-0 rounded-xl"
             style={{
               background:
-                "linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0) 45%, rgba(0,0,0,0.28) 100%)",
+                "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0) 40%, rgba(0,0,0,0.25) 100%)",
               mixBlendMode: "screen",
             }}
           />
@@ -229,43 +308,24 @@ function TechCard({ tech }: { tech: Tech }) {
             className="relative h-6 w-6"
             loading="lazy"
             decoding="async"
-            style={{ transform: "translateZ(2px)" }}
           />
         </div>
-
-        <div style={{ transform: "translateZ(16px)" }}>
+        <div>
           <div className="text-sm font-semibold text-white">{tech.name}</div>
           <div className="text-[11px] text-zinc-400">Core tool</div>
         </div>
       </div>
 
-      <div
-        className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]"
-        style={{
-          transform: "translateZ(8px)",
-          boxShadow: "inset 0 2px 6px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04)",
-        }}
-      >
+      {/* Progress bar with subtle glow */}
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <div
-          className="h-full origin-left rounded-full"
+          className="h-full origin-left rounded-full transition-transform duration-600 ease-out group-hover:duration-300"
           style={{
-            width: `${Math.round(tech.level * 100)}%`,
+            transform: "scaleX(0.72)",
             backgroundColor: hexToRgba(tech.color, 0.9),
             boxShadow: `0 0 22px ${hexToRgba(tech.color, 0.35)}`,
-            transition: "width 700ms ease-out",
-            position: "relative",
           }}
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute top-0 bottom-0 w-16 opacity-70"
-            style={{
-              left: "calc(var(--mx,50%) - 2rem)",
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)",
-              filter: "blur(2px)",
-            }}
-          />
-        </div>
+        />
       </div>
     </article>
   );
@@ -277,5 +337,5 @@ function hexToRgba(hex: string, alpha = 1) {
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  return `rgba(${r}, ${b ? g : 0}, ${b}, ${alpha})`;
 }
