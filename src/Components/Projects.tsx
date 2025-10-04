@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+type Metric = { label: string; value: string };
+
 type Project = {
   title: string;
   url: string;
@@ -13,6 +15,9 @@ type Project = {
   summary?: string;
   year?: number;
   repo?: string;
+  // New fields:
+  metrics?: Metric[];
+  shots?: string[]; // small images shown after the techs row
 };
 
 const projects: Project[] = [
@@ -22,8 +27,15 @@ const projects: Project[] = [
     tags: ["Next.js", "TypeScript", "Tailwind"],
     summary: "Modern web experience with a focus on clarity and performance.",
     year: 2024,
-    // image: "/projects/plexjar.jpg",
-    // preview: "/previews/plexjar.mp4",
+    metrics: [
+      { label: "Performance", value: "Lighthouse 98" },
+      { label: "Role", value: "Front‑end" },
+      { label: "Focus", value: "UX • Speed" },
+    ],
+    shots: [
+      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=640&q=60&auto=format",
+      "https://images.unsplash.com/photo-1557800636-894a64c1696f?w=640&q=60&auto=format",
+    ],
   },
   {
     title: "Arkin PHI",
@@ -31,6 +43,13 @@ const projects: Project[] = [
     tags: ["Next.js", "GSAP", "UI/UX"],
     summary: "Interactive landing with premium feel and purposeful motion.",
     year: 2024,
+    metrics: [
+      { label: "Motion", value: "Scroll scenes" },
+      { label: "UX", value: "Haptic + Delight" },
+    ],
+    shots: [
+      "https://images.unsplash.com/photo-1551281044-8b59a4f16770?w=640&q=60&auto=format",
+    ],
   },
   {
     title: "Webspak",
@@ -38,6 +57,10 @@ const projects: Project[] = [
     tags: ["React", "Tailwind", "Animation"],
     summary: "Product site with crisp design and smooth interactions.",
     year: 2024,
+    metrics: [
+      { label: "Stack", value: "React + TW" },
+      { label: "Ship", value: "2 weeks" },
+    ],
   },
   {
     title: "Akride",
@@ -45,6 +68,9 @@ const projects: Project[] = [
     tags: ["React", "CSS", "SPA"],
     summary: "Clean SPA showcasing content with speed and simplicity.",
     year: 2023,
+    shots: [
+      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&q=60&auto=format",
+    ],
   },
 ];
 
@@ -57,7 +83,11 @@ export function ProjectsSection() {
   const itemRefs = useRef<HTMLDivElement[]>([]);
   const prefersReduced = useRef(false);
   const [active, setActive] = useState(0);
+
+  // site modal
   const [modal, setModal] = useState<{ url: string; title: string } | null>(null);
+  // image lightbox
+  const [lightbox, setLightbox] = useState<{ src: string; title?: string } | null>(null);
 
   useEffect(() => {
     prefersReduced.current = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -91,7 +121,7 @@ export function ProjectsSection() {
     }
   };
 
-  // coverflow transforms
+  // coverflow transforms + active detection
   useEffect(() => {
     const track = trackRef.current!;
     if (!track) return;
@@ -103,7 +133,10 @@ export function ProjectsSection() {
         const c = el.offsetLeft + el.clientWidth / 2;
         const d = c - center;
         const abs = Math.abs(d);
-        if (abs < min) { min = abs; nearest = i; }
+        if (abs < min) {
+          min = abs;
+          nearest = i;
+        }
         const ratio = Math.min(1, abs / (track.clientWidth * 0.7));
         const scale = 1 - ratio * 0.08;
         const ry = (d / track.clientWidth) * 12;
@@ -123,16 +156,17 @@ export function ProjectsSection() {
     };
   }, []);
 
-  // drag swipe + snap
+  // drag swipe + momentum + snap
   useEffect(() => {
     const track = trackRef.current!;
     if (!track) return;
+
     let isDown = false;
     let startX = 0;
     let startScroll = 0;
     let lastX = 0;
     let lastT = 0;
-    let velocity = 0;
+    let velocity = 0; // px/ms
 
     const onPointerDown = (e: PointerEvent) => {
       isDown = true;
@@ -143,6 +177,7 @@ export function ProjectsSection() {
       lastX = e.clientX;
       lastT = performance.now();
     };
+
     const onPointerMove = (e: PointerEvent) => {
       if (!isDown) return;
       e.preventDefault();
@@ -150,44 +185,77 @@ export function ProjectsSection() {
       track.scrollLeft = startScroll - dx;
       const now = performance.now();
       const dt = now - lastT || 1;
-      velocity = (e.clientX - lastX) / dt;
+      velocity = (e.clientX - lastX) / dt; // px per ms
       lastX = e.clientX;
       lastT = now;
     };
-    const snap = () => {
+
+    const findNearestIndex = () => {
       const center = track.scrollLeft + track.clientWidth / 2;
       let nearest = 0;
       let min = Infinity;
       itemRefs.current.forEach((el, i) => {
         const c = el.offsetLeft + el.clientWidth / 2;
         const d = Math.abs(c - center);
-        if (d < min) { min = d; nearest = i; }
+        if (d < min) {
+          min = d;
+          nearest = i;
+        }
       });
-      if (Math.abs(velocity) > 0.5) {
-        nearest = Math.max(0, Math.min(projects.length - 1, nearest + (velocity > 0 ? -1 : 1)));
+      return nearest;
+    };
+
+    const snap = (flickDir = 0) => {
+      let nearest = findNearestIndex();
+      if (flickDir !== 0) {
+        nearest = Math.max(0, Math.min(projects.length - 1, nearest + flickDir));
       }
       centerTo(nearest);
     };
-    const end = (e: PointerEvent) => {
+
+    const onPointerUp = (e: PointerEvent) => {
       if (!isDown) return;
       isDown = false;
       track.classList.remove("dragging");
-      track.releasePointerCapture?.(e.pointerId);
-      snap();
+
+      // decide by velocity and drag distance
+      const v = velocity; // px/ms
+      const flickThreshold = 0.7; // feels nice on both mouse and touch
+      const dx = e.clientX - startX;
+      const card = itemRefs.current[active];
+      const distanceThreshold = (card?.clientWidth || 600) * 0.2;
+
+      if (Math.abs(v) > flickThreshold) {
+        // negative v = moved left -> go to next
+        snap(v < 0 ? +1 : -1);
+      } else if (Math.abs(dx) > distanceThreshold) {
+        snap(dx < 0 ? +1 : -1);
+      } else {
+        snap(0);
+      }
+    };
+
+    const onLeaveOrCancel = (e: PointerEvent) => {
+      if (!isDown) return;
+      isDown = false;
+      track.classList.remove("dragging");
+      snap(0);
     };
 
     track.addEventListener("pointerdown", onPointerDown, { passive: true });
     track.addEventListener("pointermove", onPointerMove, { passive: false });
-    track.addEventListener("pointerup", end, { passive: true });
-    track.addEventListener("pointercancel", () => isDown && snap(), { passive: true });
-    track.addEventListener("pointerleave", () => isDown && snap(), { passive: true });
+    track.addEventListener("pointerup", onPointerUp, { passive: true });
+    track.addEventListener("pointercancel", onLeaveOrCancel, { passive: true });
+    track.addEventListener("pointerleave", onLeaveOrCancel, { passive: true });
 
     return () => {
       track.removeEventListener("pointerdown", onPointerDown);
       track.removeEventListener("pointermove", onPointerMove);
-      track.removeEventListener("pointerup", end);
+      track.removeEventListener("pointerup", onPointerUp);
+      track.removeEventListener("pointercancel", onLeaveOrCancel);
+      track.removeEventListener("pointerleave", onLeaveOrCancel);
     };
-  }, []);
+  }, [active]);
 
   // keyboard nav
   useEffect(() => {
@@ -221,7 +289,7 @@ export function ProjectsSection() {
               Selected work
             </h2>
             <p data-sub className="mt-2 max-w-2xl text-zinc-400">
-              Immersive previews — live embeds, subtle motion, and elegant micro-interactions.
+              Drag to swipe through immersive previews. Each card shows stack and extras below.
             </p>
           </div>
 
@@ -246,8 +314,8 @@ export function ProjectsSection() {
         {/* Carousel */}
         <div
           ref={trackRef}
-          className="no-scrollbar relative -mx-2 flex snap-x snap-mandatory gap-6 overflow-x-auto px-2 pb-8 pt-2"
-          style={{ touchAction: "pan-y" }}
+          className="no-scrollbar relative -mx-2 flex snap-x snap-mandatory gap-6 overflow-x-auto px-2 pb-8 pt-2 select-none"
+          style={{ touchAction: "pan-y", cursor: "grab" }}
         >
           {projects.map((p, i) => (
             <div
@@ -266,13 +334,14 @@ export function ProjectsSection() {
               <ProjectCard
                 project={p}
                 onQuickPreview={() => setModal({ url: p.url, title: p.title })}
+                onShowImage={(src) => setLightbox({ src, title: p.title })}
                 accentIndex={i}
               />
             </div>
           ))}
         </div>
 
-        {/* Dots / thumbnails */}
+        {/* Progress bar */}
         <div className="mt-6 flex items-center justify-center gap-3">
           <div className="w-[260px] h-1 rounded-full bg-white/6 overflow-hidden">
             <div
@@ -284,7 +353,7 @@ export function ProjectsSection() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Live site modal */}
       {modal && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4">
           <div className="relative w-full max-w-6xl overflow-hidden rounded-2xl border border-white/8 bg-[#0d1014] ring-1 ring-white/6 shadow-2xl">
@@ -325,10 +394,30 @@ export function ProjectsSection() {
         </div>
       )}
 
+      {/* Image lightbox */}
+      {lightbox && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4" onClick={() => setLightbox(null)}>
+          <div className="relative max-h-[85vh] w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-[#0d1014] ring-1 ring-white/10">
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute right-3 top-3 z-10 rounded-md bg-black/40 px-2 py-1 text-sm text-white ring-1 ring-white/10"
+            >
+              Close
+            </button>
+            <img
+              src={lightbox.src}
+              alt={lightbox.title || "Preview"}
+              className="block max-h-[85vh] w-full object-contain"
+            />
+          </div>
+        </div>
+      )}
+
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .dragging { cursor: grabbing; }
+        .dragging { cursor: grabbing !important; }
+        .dragging iframe, .dragging a { pointer-events: none !important; }
 
         /* Animated background helpers */
         @keyframes bgShift {
@@ -349,21 +438,22 @@ export function ProjectsSection() {
   );
 }
 
-/* ================= ProjectCard (enhanced UI) ================= */
+/* ================= ProjectCard (with extras after techs) ================= */
 function ProjectCard({
   project,
   onQuickPreview,
+  onShowImage,
   accentIndex,
 }: {
   project: Project;
   onQuickPreview: () => void;
+  onShowImage: (src: string) => void;
   accentIndex?: number;
 }) {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [inView, setInView] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
-  // Removed unused 'tilt' state
 
   // lazy load iframe when visible
   useEffect(() => {
@@ -391,7 +481,6 @@ function ProjectCard({
     const y = (e.clientY - r.top) / r.height;
     const rx = (0.5 - y) * 8;
     const ry = (x - 0.5) * 12;
-    // Removed setTilt, only update CSS variables
     el.style.setProperty("--rx", `${rx}deg`);
     el.style.setProperty("--ry", `${ry}deg`);
     el.style.setProperty("--mx", `${(x * 100).toFixed(2)}%`);
@@ -400,7 +489,6 @@ function ProjectCard({
   const onLeave = () => {
     const el = cardRef.current;
     if (!el) return;
-    // Removed setTilt, only update CSS variables
     el.style.setProperty("--rx", `0deg`);
     el.style.setProperty("--ry", `0deg`);
     el.style.setProperty("--mx", `50%`);
@@ -410,7 +498,6 @@ function ProjectCard({
   const coverHi = project.image || screenshot(project.url, 1280);
   const coverLow = project.image || screenshot(project.url, 360);
 
-  // subtle accent color for glow based on index
   const accentGradient = [
     "from-violet-400 to-pink-400",
     "from-emerald-300 to-sky-400",
@@ -436,9 +523,15 @@ function ProjectCard({
         <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
         <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
         <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
-        <div className="ml-3 text-xs text-zinc-400 truncate">{project.url.replace(/^https?:\/\//, "")}</div>
+        <div className="ml-3 text-xs text-zinc-400 truncate">
+          {project.url.replace(/^https?:\/\//, "")}
+        </div>
         <div className="ml-auto hidden sm:inline-flex items-center gap-2">
-          {project.year && <div className="rounded-full bg-white/6 px-2 py-0.5 text-[11px] text-zinc-300">{project.year}</div>}
+          {project.year && (
+            <div className="rounded-full bg-white/6 px-2 py-0.5 text-[11px] text-zinc-300">
+              {project.year}
+            </div>
+          )}
           <div className={`h-1 w-16 rounded-full bg-gradient-to-r ${accentGradient} opacity-30`} />
         </div>
       </div>
@@ -499,7 +592,7 @@ function ProjectCard({
             {project.summary && <p className="mt-1 text-sm text-zinc-400 line-clamp-2">{project.summary}</p>}
           </div>
 
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
             <button
               onClick={onQuickPreview}
               className="rounded-lg border border-white/8 bg-[#0e1116] px-2 py-1.5 text-xs text-zinc-300 ring-1 ring-white/6 transition-transform hover:scale-[1.03]"
@@ -517,21 +610,58 @@ function ProjectCard({
           </div>
         </div>
 
+        {/* Tech tags */}
         <div className="flex flex-wrap items-center gap-2">
           {project.tags.map((t) => (
             <span
               key={t}
-              className={`rounded-full px-2 py-1 text-[11px] font-medium text-zinc-300 bg-white/3 ring-1 ring-white/4`}
+              className="rounded-full bg-white/3 px-2 py-1 text-[11px] font-medium text-zinc-300 ring-1 ring-white/4"
             >
               {t}
             </span>
           ))}
         </div>
+
+        {/* Extras: metrics and/or small gallery */}
+        {(project.metrics?.length || project.shots?.length) ? (
+          <div className="mt-2 space-y-3">
+            {/* Metrics chips */}
+            {project.metrics?.length ? (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {project.metrics.map((m, i) => (
+                  <div
+                    key={i}
+                    className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-zinc-300 ring-1 ring-white/10"
+                    style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
+                  >
+                    <div className="text-[10px] uppercase tracking-wide text-white/70">{m.label}</div>
+                    <div className="mt-0.5 font-medium text-white">{m.value}</div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {/* Image gallery thumbs */}
+            {project.shots?.length ? (
+              <div className="no-scrollbar flex gap-2 overflow-x-auto">
+                {project.shots.map((src, i) => (
+                  <button
+                    key={i}
+                    onClick={() => onShowImage(src)}
+                    className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border border-white/10 ring-1 ring-white/10"
+                    title="Open image"
+                  >
+                    <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
-      <style>{`
-        article { will-change: transform; }
-      `}</style>
+      <style>{`article { will-change: transform; }`}</style>
     </article>
   );
 }
