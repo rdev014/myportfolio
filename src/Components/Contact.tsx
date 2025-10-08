@@ -1,12 +1,11 @@
-
 import { useEffect, useRef, useState } from "react";
 import type React from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 type FormState = {
-  name: string;
-  email: string;
+  name: string;   // From Name
+  email: string;  // From Email
   subject: string;
   message: string;
 };
@@ -14,6 +13,8 @@ type FormState = {
 export function ContactSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const TO_EMAIL = "jorgjack40@gmail.com"; // <-- set your real address
 
   const [form, setForm] = useState<FormState>({
     name: "",
@@ -83,7 +84,7 @@ export function ContactSection() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, to: TO_EMAIL }),
       });
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
 
@@ -105,18 +106,18 @@ export function ContactSection() {
             data-kicker
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300"
           >
-            Contact
+            Mail
           </span>
           <h1 data-title className="mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
-            Let’s build something great together
+            Compose a message — I’ll reply within 24h
           </h1>
           <p data-sub className="mx-auto mt-2 max-w-2xl text-zinc-400">
-            Tell me about your project or say hello. I’ll get back within 24 hours.
+            Familiar email-style composer: To, From, Subject, and Message. Clean, centered, and polished.
           </p>
         </header>
 
-        {/* Centered form card */}
-        <div className="mx-auto max-w-2xl">
+        {/* Composer card */}
+        <div className="mx-auto max-w-3xl">
           <div
             ref={cardRef}
             data-form
@@ -147,6 +148,16 @@ export function ContactSection() {
               className="pointer-events-none absolute inset-0 rounded-2xl"
               style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.5)" }}
             />
+            {/* window controls + title */}
+            <div className="flex items-center justify-between border-b border-white/10 bg-[#0f1218]/60 px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+                <span className="ml-2 text-xs uppercase tracking-wider text-zinc-400">Compose</span>
+              </div>
+              <div className="text-[11px] text-zinc-500">New message</div>
+            </div>
             {/* glare */}
             <div
               aria-hidden
@@ -158,78 +169,113 @@ export function ContactSection() {
               }}
             />
 
-            <form onSubmit={onSubmit} className="relative z-10 space-y-4 p-5 sm:p-6">
-              <Field
-                label="Name"
-                id="name"
-                value={form.name}
-                onChange={setField("name")}
-                error={errors.name}
-                placeholder="Your name"
-              />
+            {/* Form rows: To / From / Subject / Message */}
+            <form onSubmit={onSubmit} className="relative z-10 p-5 sm:p-6">
+              {/* To */}
+              <Row label="To">
+                <span className="inline-flex items-center rounded-md bg-white/10 px-2.5 py-1 text-xs text-zinc-200 ring-1 ring-white/10">
+                  {TO_EMAIL}
+                </span>
+              </Row>
 
-              <Field
-                label="Email"
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={setField("email")}
-                error={errors.email}
-                placeholder="you@domain.com"
-              />
-
-              <Field
-                label="Subject"
-                id="subject"
-                value={form.subject}
-                onChange={setField("subject")}
-                error={errors.subject}
-                placeholder="What’s this about?"
-              />
-
-              <Field
-                label="Message"
-                id="message"
-                as="textarea"
-                value={form.message}
-                onChange={setField("message")}
-                error={errors.message}
-                placeholder="Tell me about your project, goals, and success criteria…"
-                rows={6}
-              />
-
-              {/* Submit */}
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <div className="text-[11px] text-zinc-500">
-                  I’ll reply within 24 hours. Or email me at{" "}
-                  <a href="mailto:you@example.com" className="text-zinc-300 underline underline-offset-2">
-                    jorgjack40.com
-                  </a>
-                  .
+              {/* From (name + email) */}
+              <Row label="From">
+                <div className="grid w-full gap-2 sm:grid-cols-2">
+                  <input
+                    id="from-name"
+                    value={form.name}
+                    onChange={setField("name")}
+                    placeholder="Your name"
+                    className="w-full rounded-xl border border-white/10 bg-[#0f1319] px-3 py-2.5 text-sm text-white ring-1 ring-white/10 outline-none transition placeholder:text-zinc-500 focus:border-white/20 focus:ring-white/20"
+                  />
+                  <input
+                    id="from-email"
+                    type="email"
+                    value={form.email}
+                    onChange={setField("email")}
+                    placeholder="you@domain.com"
+                    className="w-full rounded-xl border border-white/10 bg-[#0f1319] px-3 py-2.5 text-sm text-white ring-1 ring-white/10 outline-none transition placeholder:text-zinc-500 focus:border-white/20 focus:ring-white/20"
+                  />
                 </div>
+              </Row>
+              {(errors.name || errors.email) && (
+                <div className="mb-2 grid grid-cols-[64px_1fr] items-start gap-3">
+                  <div />
+                  <div className="space-y-1">
+                    {errors.name && <p className="text-xs text-red-400">{errors.name}</p>}
+                    {errors.email && <p className="text-xs text-red-400">{errors.email}</p>}
+                  </div>
+                </div>
+              )}
 
-                <button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="group relative inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/10 transition disabled:opacity-50"
-                  style={{ transform: "translate3d(var(--tx,0), var(--ty,0), 0) scale(var(--scale,1))" }}
-                  onMouseMove={(e) => magnetMove(e.currentTarget as HTMLElement, e)}
-                  onMouseLeave={(e) => magnetReset(e.currentTarget as HTMLElement)}
-                >
-                  {status === "loading" ? (
-                    <>
-                      <Spinner /> Sending…
-                    </>
-                  ) : status === "success" ? (
-                    <>
-                      <CheckIcon /> Sent!
-                    </>
-                  ) : (
-                    <>
-                      Send message <ArrowIcon />
-                    </>
-                  )}
-                </button>
+              {/* Subject */}
+              <Row label="Subject">
+                <input
+                  id="subject"
+                  value={form.subject}
+                  onChange={setField("subject")}
+                  placeholder="Let’s build something great"
+                  className="w-full rounded-xl border border-white/10 bg-[#0f1319] px-3 py-2.5 text-sm text-white ring-1 ring-white/10 outline-none transition placeholder:text-zinc-500 focus:border-white/20 focus:ring-white/20"
+                />
+              </Row>
+              {errors.subject && (
+                <div className="mb-2 grid grid-cols-[64px_1fr] items-start gap-3">
+                  <div />
+                  <p className="text-xs text-red-400">{errors.subject}</p>
+                </div>
+              )}
+
+              {/* Message */}
+              <Row label="Message" alignTop>
+                <textarea
+                  id="message"
+                  value={form.message}
+                  onChange={setField("message")}
+                  rows={8}
+                  placeholder="Hi — I’d love to chat about…"
+                  className="w-full resize-y rounded-xl border border-white/10 bg-[#0f1319] px-3 py-2.5 text-sm text-white ring-1 ring-white/10 outline-none transition placeholder:text-zinc-500 focus:border-white/20 focus:ring-white/20"
+                />
+              </Row>
+              {errors.message && (
+                <div className="mb-2 grid grid-cols-[64px_1fr] items-start gap-3">
+                  <div />
+                  <p className="text-xs text-red-400">{errors.message}</p>
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="mt-4 grid grid-cols-[64px_1fr] items-center gap-3">
+                <div />
+                <div className="flex items-center justify-between">
+                  <div className="text-[11px] text-zinc-500">
+                    Or email me directly:{" "}
+                    <a href={`mailto:${TO_EMAIL}`} className="text-zinc-300 underline underline-offset-2">
+                      {TO_EMAIL}
+                    </a>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={status === "loading"}
+                    className="group relative inline-flex items-center gap-2 rounded-lg border border-white/10 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-300 ring-1 ring-white/10 transition hover:bg-indigo-500/20 hover:text-white disabled:opacity-50"
+                    style={{ transform: "translate3d(var(--tx,0), var(--ty,0), 0) scale(var(--scale,1))" }}
+                    onMouseMove={(e) => magnetMove(e.currentTarget as HTMLElement, e)}
+                    onMouseLeave={(e) => magnetReset(e.currentTarget as HTMLElement)}
+                  >
+                    {status === "loading" ? (
+                      <>
+                        <Spinner /> Sending…
+                      </>
+                    ) : status === "success" ? (
+                      <>
+                        <CheckIcon /> Sent!
+                      </>
+                    ) : (
+                      <>
+                        Send <PaperPlaneIcon />
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Server message */}
@@ -253,37 +299,13 @@ export function ContactSection() {
   );
 }
 
-/* ============ Field component ============ */
-function Field(props: {
-  label: string;
-  id: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<any>) => void;
-  error?: string;
-  placeholder?: string;
-  type?: string;
-  as?: "textarea";
-  rows?: number;
-}) {
-  const InputTag = props.as === "textarea" ? "textarea" : "input";
+/* ============ Row helper (label: To/From/Subject/Message) ============ */
+function Row({ label, children, alignTop }: { label: string; children: React.ReactNode; alignTop?: boolean }) {
   return (
-    <label htmlFor={props.id} className="block">
-      <div className="mb-1 text-xs font-medium text-zinc-400">{props.label}</div>
-      <div className="relative">
-        <InputTag
-          id={props.id}
-          value={props.value}
-          onChange={props.onChange}
-          placeholder={props.placeholder}
-          rows={(props.as === "textarea" && props.rows) || undefined}
-          type={props.type || (props.as ? undefined : "text")}
-          className="w-full rounded-xl border border-white/10 bg-[#0f1319] px-3 py-2.5 text-sm text-white ring-1 ring-white/10 outline-none transition placeholder:text-zinc-500 focus:border-white/20 focus:ring-white/20"
-        />
-        {/* focus accent */}
-        <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-white/0 transition-[ring] focus-within:ring-white/20" />
-      </div>
-      {props.error && <p className="mt-1 text-xs text-red-400">{props.error}</p>}
-    </label>
+    <div className={`mb-3 grid grid-cols-[64px_1fr] ${alignTop ? "items-start" : "items-center"} gap-3`}>
+      <div className={`text-xs uppercase tracking-wider text-zinc-400 ${alignTop ? "pt-2" : ""}`}>{label}</div>
+      <div>{children}</div>
+    </div>
   );
 }
 
@@ -312,10 +334,10 @@ function CheckIcon() {
     </svg>
   );
 }
-function ArrowIcon() {
+function PaperPlaneIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-80" fill="currentColor" aria-hidden>
-      <path d="M12 4l1.41 1.41L8.83 10H20v2H8.83l4.58 4.59L12 18l-8-8 8-8z" />
+    <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-90" fill="currentColor" aria-hidden>
+      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
     </svg>
   );
-}
+} 

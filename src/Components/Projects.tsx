@@ -234,12 +234,13 @@ export function ProjectsSection() {
       }
     };
 
-    const onLeaveOrCancel = (e: PointerEvent) => {
-      if (!isDown) return;
-      isDown = false;
-      track.classList.remove("dragging");
-      snap(0);
-    };
+ const onLeaveOrCancel = (_e: PointerEvent) => {
+  if (!isDown) return;
+  isDown = false;
+  track.classList.remove("dragging");
+  snap(0);
+};
+
 
     track.addEventListener("pointerdown", onPointerDown, { passive: true });
     track.addEventListener("pointermove", onPointerMove, { passive: false });

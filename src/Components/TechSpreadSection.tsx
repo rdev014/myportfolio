@@ -69,234 +69,296 @@ function TechSpreadSection() {
   const gridActiveRef = useRef(false);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger);
 
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia();
-      const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
-      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+    const clamp = (v: number, min: number, max: number) =>
+      Math.max(min, Math.min(max, v));
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      // Fit square tiles to stage
-      const fitSquares = () => {
-        const s = stageRef.current!.getBoundingClientRect();
-        const N = techs.length;
-        const pad = Math.round(clamp(s.width * 0.04, 22, 36));
-        const aw = s.width - pad * 2;
-        const ah = s.height - pad * 2;
-        const gap = Math.round(clamp(s.width * 0.012, GAP_MIN, GAP_MAX));
-        let best: { cols: number; tile: number; rows: number } | null = null;
-        const colsMax = Math.min(MAX_COLS, N);
+    // Skip heavy animations if the user prefers reduced motion
+    if (prefersReduced) return;
 
-        for (let cols = colsMax; cols >= MIN_COLS; cols--) {
-          const rows = Math.ceil(N / cols);
-          let tile = (aw - (cols - 1) * gap) / cols;
-          const tileH = (ah - (rows - 1) * gap) / rows;
-          tile = Math.min(tile, tileH);
-          tile = Math.floor(clamp(tile, MIN_TILE, MAX_TILE));
-          if (!best || tile > best.tile) best = { cols, tile, rows };
-        }
-        if (!best) {
-          const cols = Math.min(Math.max(MIN_COLS, Math.floor(Math.sqrt(N))), N);
-          const rows = Math.ceil(N / cols);
-          const tile = Math.floor(clamp((ah - (rows - 1) * gap) / rows, MIN_TILE, MAX_TILE));
-          best = { cols, tile, rows };
-        }
+    // Fit square tiles to stage
+    const fitSquares = () => {
+      const s = stageRef.current!.getBoundingClientRect();
+      const N = techs.length;
+      const pad = Math.round(clamp(s.width * 0.04, 22, 36));
+      const aw = s.width - pad * 2;
+      const ah = s.height - pad * 2;
+      const gap = Math.round(clamp(s.width * 0.012, GAP_MIN, GAP_MAX));
+      let best: { cols: number; tile: number; rows: number } | null = null;
+      const colsMax = Math.min(MAX_COLS, N);
 
-        layoutRef.current = { cols: best.cols, rows: best.rows, tile: best.tile, gap, aw, ah, pad };
-        gsap.set(itemsRef.current, { width: best.tile, height: best.tile });
+      for (let cols = colsMax; cols >= MIN_COLS; cols--) {
+        const rows = Math.ceil(N / cols);
+        let tile = (aw - (cols - 1) * gap) / cols;
+        const tileH = (ah - (rows - 1) * gap) / rows;
+        tile = Math.min(tile, tileH);
+        tile = Math.floor(clamp(tile, MIN_TILE, MAX_TILE));
+        if (!best || tile > best.tile) best = { cols, tile, rows };
+      }
+      if (!best) {
+        const cols = Math.min(Math.max(MIN_COLS, Math.floor(Math.sqrt(N))), N);
+        const rows = Math.ceil(N / cols);
+        const tile = Math.floor(clamp((ah - (rows - 1) * gap) / rows, MIN_TILE, MAX_TILE));
+        best = { cols, tile, rows };
+      }
+
+      layoutRef.current = { cols: best.cols, rows: best.rows, tile: best.tile, gap, aw, ah, pad };
+      gsap.set(itemsRef.current, { width: best.tile, height: best.tile });
+    };
+
+    const computeSpread = () => {
+      const { aw, ah, tile } = layoutRef.current;
+      const count = itemsRef.current.length;
+      const minDim = Math.min(aw, ah);
+      const radiusMax = minDim * 0.44;
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      const maxX = aw / 2 - tile / 2 - 6;
+      const maxY = ah / 2 - tile / 2 - 6;
+
+      return Array.from({ length: count }, (_, i) => {
+        const t = i + 1;
+        const radius = radiusMax * Math.sqrt(t / count);
+        const angle = t * golden;
+        let x = Math.cos(angle) * radius;
+        let y = Math.sin(angle) * radius;
+        x = Math.max(-maxX, Math.min(maxX, x));
+        y = Math.max(-maxY, Math.min(maxY, y));
+        const rot = Math.sin(t) * 5;
+        return { x: Math.round(x), y: Math.round(y), r: rot };
+      });
+    };
+
+    const gridPos = (i: number) => {
+      const { cols, tile, gap } = layoutRef.current;
+      const rows = Math.ceil(techs.length / cols);
+      const gridW = cols * tile + (cols - 1) * gap;
+      const gridH = rows * tile + (rows - 1) * gap;
+      const startX = -gridW / 2 + tile / 2;
+      const startY = -gridH / 2 + tile / 2;
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      return {
+        x: Math.round(startX + col * (tile + gap)),
+        y: Math.round(startY + row * (tile + gap)),
       };
+    };
 
-      const computeSpread = () => {
-        const { aw, ah, tile } = layoutRef.current;
-        const count = itemsRef.current.length;
-        const minDim = Math.min(aw, ah);
-        const radiusMax = minDim * 0.44;
-        const golden = Math.PI * (3 - Math.sqrt(5));
-        const maxX = aw / 2 - tile / 2 - 6;
-        const maxY = ah / 2 - tile / 2 - 6;
+    let spreadCache: { x: number; y: number; r: number }[] = [];
+    let gridCache: { x: number; y: number }[] = [];
 
-        return Array.from({ length: count }, (_, i) => {
-          const t = i + 1;
-          const radius = radiusMax * Math.sqrt(t / count);
-          const angle = t * golden;
-          let x = Math.cos(angle) * radius;
-          let y = Math.sin(angle) * radius;
-          x = Math.max(-maxX, Math.min(maxX, x));
-          y = Math.max(-maxY, Math.min(maxY, y));
-          const rot = Math.sin(t) * 5; // slight scatter tilt during spread
-          return { x: Math.round(x), y: Math.round(y), r: rot };
-        });
-      };
+    const refreshAll = () => {
+      fitSquares();
+      spreadCache = computeSpread();
+      gridCache = itemsRef.current.map((_, i) => gridPos(i));
+    };
 
-      const gridPos = (i: number) => {
-        const { cols, tile, gap } = layoutRef.current;
-        const rows = Math.ceil(techs.length / cols);
-        const gridW = cols * tile + (cols - 1) * gap;
-        const gridH = rows * tile + (rows - 1) * gap;
-        const startX = -gridW / 2 + tile / 2;
-        const startY = -gridH / 2 + tile / 2;
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        return { x: Math.round(startX + col * (tile + gap)), y: Math.round(startY + row * (tile + gap)) };
-      };
+    // Desktop pinned stage
+    mm.add("(min-width: 1024px)", () => {
+      refreshAll();
+      gsap.set(stageRef.current, {
+        transformPerspective: 1000,
+        perspective: 1000,
+        backgroundImage:
+          "radial-gradient(700px 500px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.035), transparent 60%)",
+      });
 
-      let spreadCache: { x: number; y: number; r: number }[] = [];
-      let gridCache: { x: number; y: number }[] = [];
+      gsap.set(itemsRef.current, {
+        x: 0,
+        y: 0,
+        rotate: 0,
+        scale: 0.96,
+        opacity: 0,
+        z: (i: number) => i,
+        transformOrigin: "center",
+        force3D: true,
+      });
+      gsap.set(innerRef.current, { x: 0, y: 0, yPercent: 0 });
 
-      const refreshAll = () => {
-        fitSquares();
-        spreadCache = computeSpread();
-        gridCache = itemsRef.current.map((_, i) => gridPos(i));
-      };
-
-      // Desktop pinned stage
-      mm.add("(min-width: 1024px)", () => {
-        refreshAll();
-        gsap.set(stageRef.current, {
-          transformPerspective: 1000,
-          perspective: 1000,
-          // subtle global light that follows the cursor (updated via --mx/--my)
-          backgroundImage:
-            "radial-gradient(700px 500px at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.035), transparent 60%)",
-        });
-
-        gsap.set(itemsRef.current, {
-          x: 0, y: 0, rotate: 0, scale: 0.96, opacity: 0, z: (i: number) => i,
-          transformOrigin: "center", force3D: true,
-        });
-        gsap.set(innerRef.current, { x: 0, y: 0, yPercent: 0 });
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top top",
-            end: "+=170%",
-            scrub: 0.35,
-            pin: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            onRefresh: () => {
-              refreshAll();
-              gsap.set(itemsRef.current, { width: layoutRef.current.tile, height: layoutRef.current.tile });
-            },
-            snap: { snapTo: [0, 0.5, 1], duration: { min: 0.12, max: 0.3 }, ease: "power1.inOut" },
-            onUpdate: (st) => {
-              gridActiveRef.current = st.progress >= 0.7;
-              if (!gridActiveRef.current) gsap.to(innerRef.current, { x: 0, y: 0, duration: 0.25, overwrite: true });
-            },
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "+=170%",
+          scrub: 0.35,
+          pin: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onRefresh: () => {
+            refreshAll();
+            gsap.set(itemsRef.current, {
+              width: layoutRef.current.tile,
+              height: layoutRef.current.tile,
+            });
           },
-          defaults: { ease: "power2.out" },
-        });
-        tlRef.current = tl;
+          snap: {
+            snapTo: [0, 0.5, 1],
+            duration: { min: 0.12, max: 0.3 },
+            ease: "power1.inOut",
+          },
+          onUpdate: (st) => {
+            gridActiveRef.current = st.progress >= 0.7;
+            if (!gridActiveRef.current)
+              gsap.to(innerRef.current, {
+                x: 0,
+                y: 0,
+                duration: 0.25,
+                overwrite: true,
+              });
+          },
+        },
+        defaults: { ease: "power2.out" },
+      });
+      tlRef.current = tl;
 
-        tl.fromTo(stageRef.current, { scale: 0.985, filter: "blur(2px) brightness(0.95)" }, { scale: 1, filter: "blur(0px) brightness(1)", duration: 0.55 }, 0);
-        tl.to(itemsRef.current, { opacity: 1, scale: 1, duration: 0.3, stagger: 0.025 }, 0.05);
-        tl.to(itemsRef.current, {
+      tl.fromTo(
+        stageRef.current,
+        { scale: 0.985, filter: "blur(2px) brightness(0.95)" },
+        { scale: 1, filter: "blur(0px) brightness(1)", duration: 0.55 },
+        0
+      );
+      tl.to(
+        itemsRef.current,
+        { opacity: 1, scale: 1, duration: 0.3, stagger: 0.025 },
+        0.05
+      );
+      tl.to(
+        itemsRef.current,
+        {
           x: (i) => spreadCache[i]?.x ?? 0,
           y: (i) => spreadCache[i]?.y ?? 0,
           rotate: (i) => spreadCache[i]?.r ?? 0,
           duration: 0.95,
           stagger: { each: 0.03, from: "center" },
           force3D: true,
-        }, 0.1);
-        tl.to(itemsRef.current, {
+        },
+        0.1
+      );
+      tl.to(
+        itemsRef.current,
+        {
           x: (i) => gridCache[i]?.x ?? 0,
           y: (i) => gridCache[i]?.y ?? 0,
           rotate: 0,
           duration: 0.85,
           stagger: { each: 0.025, from: "center" },
           force3D: true,
-        }, "+=0.5");
+        },
+        "+=0.5"
+      );
 
-        // Cursor-driven "lighting" and magnetic hover (no rotation)
-        const MAG_RADIUS = 240;
-        const MAG_STRENGTH = 12;
-        const setXArr = innerRef.current.map((el) => gsap.quickSetter(el, "x", "px"));
-        const setYArr = innerRef.current.map((el) => gsap.quickSetter(el, "y", "px"));
+      const MAG_RADIUS = 240;
+      const MAG_STRENGTH = 12;
+      const setXArr = innerRef.current.map((el) =>
+        gsap.quickSetter(el, "x", "px")
+      );
+      const setYArr = innerRef.current.map((el) =>
+        gsap.quickSetter(el, "y", "px")
+      );
 
-        const onMove = (e: MouseEvent) => {
-          const stage = stageRef.current!;
-          const b = stage.getBoundingClientRect();
-          const mx = ((e.clientX - b.left) / b.width) * 100;
-          const my = ((e.clientY - b.top) / b.height) * 100;
-          stage.style.setProperty("--mx", `${mx.toFixed(2)}%`);
-          stage.style.setProperty("--my", `${my.toFixed(2)}%`);
-
-          if (!gridActiveRef.current) return;
-
-          const px = e.clientX - (b.left + b.width / 2);
-          const py = e.clientY - (b.top + b.height / 2);
-
-          for (let i = 0; i < itemsRef.current.length; i++) {
-            const base = gridCache[i];
-            if (!base) continue;
-            const vx = base.x - px;
-            const vy = base.y - py;
-            const d = Math.hypot(vx, vy) || 1;
-            const s = Math.max(0, 1 - d / MAG_RADIUS);
-            const k = s * MAG_STRENGTH;
-            setXArr[i]((vx / d) * k);
-            setYArr[i]((vy / d) * k);
-          }
-        };
-        const onLeave = () => {
-          gsap.to(innerRef.current, { x: 0, y: 0, duration: 0.25, ease: "power2.out" });
-          const stage = stageRef.current!;
-          stage.style.setProperty("--mx", "50%");
-          stage.style.setProperty("--my", "50%");
-        };
+      const onMove = (e: MouseEvent) => {
         const stage = stageRef.current!;
-        stage.addEventListener("mousemove", onMove);
-        stage.addEventListener("mouseleave", onLeave);
+        const b = stage.getBoundingClientRect();
+        const mx = ((e.clientX - b.left) / b.width) * 100;
+        const my = ((e.clientY - b.top) / b.height) * 100;
+        stage.style.setProperty("--mx", `${mx.toFixed(2)}%`);
+        stage.style.setProperty("--my", `${my.toFixed(2)}%`);
 
-        // Subtle lift on hover (inner only)
-        innerRef.current.forEach((inner) => {
-          const enter = () => gsap.to(inner, { yPercent: -2, duration: 0.22, ease: "power2.out" });
-          const leave = () => gsap.to(inner, { yPercent: 0, duration: 0.3, ease: "power2.out" });
-          inner.addEventListener("mouseenter", enter);
-          inner.addEventListener("mouseleave", leave);
-          (inner as any).__enter = enter;
-          (inner as any).__leave = leave;
-        });
+        if (!gridActiveRef.current) return;
 
-        const ro = new ResizeObserver(() => {
-          refreshAll();
-          ScrollTrigger.refresh();
-        });
-        ro.observe(stage);
+        const px = e.clientX - (b.left + b.width / 2);
+        const py = e.clientY - (b.top + b.height / 2);
 
-        return () => {
-          ro.disconnect();
-          stage.removeEventListener("mousemove", onMove);
-          stage.removeEventListener("mouseleave", onLeave);
-          innerRef.current.forEach((inner) => {
-            if ((inner as any).__enter) inner.removeEventListener("mouseenter", (inner as any).__enter);
-            if ((inner as any).__leave) inner.removeEventListener("mouseleave", (inner as any).__leave);
-          });
-        };
-      });
+        for (let i = 0; i < itemsRef.current.length; i++) {
+          const base = gridCache[i];
+          if (!base) continue;
+          const vx = base.x - px;
+          const vy = base.y - py;
+          const d = Math.hypot(vx, vy) || 1;
+          const s = Math.max(0, 1 - d / MAG_RADIUS);
+          const k = s * MAG_STRENGTH;
+          setXArr[i]((vx / d) * k);
+          setYArr[i]((vy / d) * k);
+        }
+      };
 
-      // Mobile/tablet reveal
-      mm.add("(max-width: 1023px)", () => {
-        gsap.from(".tech-icon-tile", {
-          y: 14,
-          opacity: 0,
-          scale: 0.98,
-          stagger: 0.05,
-          duration: 0.45,
+      const onLeave = () => {
+        gsap.to(innerRef.current, {
+          x: 0,
+          y: 0,
+          duration: 0.25,
           ease: "power2.out",
-          scrollTrigger: { trigger: sectionRef.current, start: "top 75%", once: true },
-          force3D: true,
         });
+        const stage = stageRef.current!;
+        stage.style.setProperty("--mx", "50%");
+        stage.style.setProperty("--my", "50%");
+      };
+
+      const stage = stageRef.current!;
+      stage.addEventListener("mousemove", onMove);
+      stage.addEventListener("mouseleave", onLeave);
+
+      innerRef.current.forEach((inner) => {
+        const enter = () =>
+          gsap.to(inner, { yPercent: -2, duration: 0.22, ease: "power2.out" });
+        const leave = () =>
+          gsap.to(inner, { yPercent: 0, duration: 0.3, ease: "power2.out" });
+        inner.addEventListener("mouseenter", enter);
+        inner.addEventListener("mouseleave", leave);
+        (inner as any).__enter = enter;
+        (inner as any).__leave = leave;
       });
 
-      return () => mm.revert();
-    }, sectionRef);
+      const ro = new ResizeObserver(() => {
+        refreshAll();
+        ScrollTrigger.refresh();
+      });
+      ro.observe(stage);
 
-    return () => {
-      tlRef.current?.kill();
-    };
-  }, []);
+      return () => {
+        ro.disconnect();
+        stage.removeEventListener("mousemove", onMove);
+        stage.removeEventListener("mouseleave", onLeave);
+        innerRef.current.forEach((inner) => {
+          if ((inner as any).__enter)
+            inner.removeEventListener("mouseenter", (inner as any).__enter);
+          if ((inner as any).__leave)
+            inner.removeEventListener("mouseleave", (inner as any).__leave);
+        });
+      };
+    });
+
+    // Mobile/tablet reveal
+    mm.add("(max-width: 1023px)", () => {
+      gsap.from(".tech-icon-tile", {
+        y: 14,
+        opacity: 0,
+        scale: 0.98,
+        stagger: 0.05,
+        duration: 0.45,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 75%",
+          once: true,
+        },
+        force3D: true,
+      });
+    });
+
+    return () => mm.revert();
+  }, sectionRef);
+
+  // ✅ Use ctx here to fix the unused variable error
+  return () => {
+    ctx.revert();
+    tlRef.current?.kill();
+  };
+}, []);
+
 
   const cubeSize = (tile: number) => Math.round(tile - 14);
 
