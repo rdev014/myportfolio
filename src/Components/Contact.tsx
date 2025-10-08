@@ -204,7 +204,7 @@ export function ContactSection() {
                 <div className="text-[11px] text-zinc-500">
                   I’ll reply within 24 hours. Or email me at{" "}
                   <a href="mailto:you@example.com" className="text-zinc-300 underline underline-offset-2">
-                    you@example.com
+                    jorgjack40.com
                   </a>
                   .
                 </div>
