@@ -11,27 +11,26 @@ type Tech = {
 };
 
 const techs: Tech[] = [
-  { name: "HTML5", logo: "https://cdn.simpleicons.org/html5/E34F26", color: "#E34F26", category: "Language", level: 0.96 },
-  { name: "CSS3", logo: "https://cdn.simpleicons.org/css3/1572B6", color: "#1572B6", category: "Style", level: 0.94 },
-  { name: "JavaScript", logo: "https://cdn.simpleicons.org/javascript/F7DF1E", color: "#F7DF1E", category: "Language", level: 0.94 },
-  { name: "Bootstrap", logo: "https://cdn.simpleicons.org/bootstrap/7952B3", color: "#7952B3", category: "Style", level: 0.82 },
-  { name: "WordPress", logo: "https://cdn.simpleicons.org/wordpress/21759B", color: "#21759B", category: "CMS", level: 0.8 },
+  { name: "HTML5", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original.svg", color: "#E34F26", category: "Language", level: 0.96 },
+  { name: "CSS3", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original.svg", color: "#1572B6", category: "Style", level: 0.94 },
+  { name: "JavaScript", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg", color: "#F7DF1E", category: "Language", level: 0.94 },
+  { name: "Bootstrap", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/bootstrap/bootstrap-original.svg", color: "#7952B3", category: "Style", level: 0.82 },
+ { name: "WordPress", logo: "https://cdn.simpleicons.org/wordpress/21759B", color: "#21759B", category: "CMS", level: 0.8 },
   { name: "Elementor", logo: "https://cdn.simpleicons.org/elementor/92003B", color: "#92003B", category: "CMS", level: 0.78 },
   { name: "GitHub", logo: "https://cdn.simpleicons.org/github/ffffff", color: "#FFFFFF", category: "Tooling", level: 0.9 },
-  { name: "Git", logo: "https://cdn.simpleicons.org/git/F05032", color: "#F05032", category: "Tooling", level: 0.6 },
-  { name: "React", logo: "https://cdn.simpleicons.org/react/61DAFB", color: "#61DAFB", category: "Framework", level: 0.92 },
-  { name: "Next.js", logo: "https://cdn.simpleicons.org/nextdotjs/ffffff", color: "#FFFFFF", category: "Framework", level: 0.9 },
-  { name: "TypeScript", logo: "https://cdn.simpleicons.org/typescript/3178C6", color: "#3178C6", category: "Language", level: 0.9 },
-  { name: "Tailwind", logo: "https://cdn.simpleicons.org/tailwindcss/38BDF8", color: "#38BDF8", category: "Style", level: 0.9 },
-  { name: "GSAP", logo: "https://cdn.simpleicons.org/greensock/88CE02", color: "#88CE02", category: "Animation", level: 0.88 },
-  { name: "Node.js", logo: "https://cdn.simpleicons.org/nodedotjs/5FA04E", color: "#5FA04E", category: "Runtime", level: 0.86 },
-  { name: "Vite", logo: "https://cdn.simpleicons.org/vite/646CFF", color: "#646CFF", category: "Build", level: 0.87 },
-  { name: "Redux", logo: "https://cdn.simpleicons.org/redux/764ABC", color: "#764ABC", category: "State", level: 0.82 },
-  { name: "Zustand", logo: "https://cdn.simpleicons.org/zustand/000000", color: "#FFBF69", category: "State", level: 0.8 },
-  { name: "GraphQL", logo: "https://cdn.simpleicons.org/graphql/E10098", color: "#E10098", category: "Data", level: 0.78 },
-  { name: "Jest", logo: "https://cdn.simpleicons.org/jest/C21325", color: "#C21325", category: "Testing", level: 0.8 },
-  { name: "Cypress", logo: "https://cdn.simpleicons.org/cypress/69D3A7", color: "#69D3A7", category: "Testing", level: 0.75 },
-];
+  { name: "Git", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg", color: "#F05032", category: "Tooling", level: 0.6 },
+  { name: "React", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg", color: "#61DAFB", category: "Framework", level: 0.92 },
+  { name: "Next.js", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/nextjs/nextjs-original.svg", color: "#FFFFFF", category: "Framework", level: 0.9 },
+  { name: "TypeScript", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg", color: "#3178C6", category: "Language", level: 0.9 },
+  { name: "Tailwind", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/tailwindcss/tailwindcss-original.svg", color: "#38BDF8", category: "Style", level: 0.9 },
+  { name: "GSAP", logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2388CE02'/%3E%3Ctext x='50' y='50' font-size='50' font-weight='bold' fill='black' text-anchor='middle' dominant-baseline='middle'%3EGS%3C/text%3E%3C/svg%3E", color: "#88CE02", category: "Animation", level: 0.88 },
+  { name: "Node.js", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg", color: "#5FA04E", category: "Runtime", level: 0.86 },
+  { name: "Vite", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/vite/vite-original.svg", color: "#646CFF", category: "Build", level: 0.87 },
+  { name: "Redux", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/redux/redux-original.svg", color: "#764ABC", category: "State", level: 0.82 },
+  { name: "Zustand", logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FFBF69'/%3E%3Ctext x='50' y='50' font-size='50' font-weight='bold' fill='black' text-anchor='middle' dominant-baseline='middle'%3EZ%3C/text%3E%3C/svg%3E", color: "#FFBF69", category: "State", level: 0.8 },
+  { name: "GraphQL", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/graphql/graphql-plain.svg", color: "#E10098", category: "Data", level: 0.78 },
+  { name: "Jest", logo: "https://raw.githubusercontent.com/devicons/devicon/master/icons/jest/jest-plain.svg", color: "#C21325", category: "Testing", level: 0.8 },
+  ];
 
 export default function StackPage() {
   return (
