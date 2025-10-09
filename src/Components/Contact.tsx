@@ -99,7 +99,7 @@ export function ContactSection() {
 
   return (
     <section ref={sectionRef} className="relative bg-[#0b0d10]">
-      <div className="mx-auto max-w-6xl px-6 py-24">
+      <div className="mx-auto max-w-6xl px-6 py-24" id="contact">
         {/* Header */}
         <header className="mb-10 text-center">
           <span

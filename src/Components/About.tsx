@@ -76,7 +76,7 @@ export function AboutSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative bg-[#0b0d10]">
+    <section ref={sectionRef} className="relative bg-[#0b0d10]" id="about">
       <div className="mx-auto max-w-6xl px-6 py-24">
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
           {/* Narrative */}
@@ -100,37 +100,6 @@ export function AboutSection() {
               My focus: maintainable component architectures, A11y-first interactions, and micro-interactions that
               guide users and elevate brand feel.
             </p>
-
-            {/* CTAs */}
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a
-                data-cta
-                href="mailto:you@example.com"
-                className="group relative inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/10 transition will-change-transform"
-                style={{ transform: "translate3d(var(--tx,0), var(--ty,0), 0) scale(var(--scale,1))" }}
-                onMouseMove={(e) => magnetMove(e.currentTarget as HTMLElement, e)}
-                onMouseLeave={(e) => magnetReset(e.currentTarget as HTMLElement)}
-              >
-                Contact
-                <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-80" fill="currentColor">
-                  <path d="M13 5l7 7-7 7v-4H4v-6h9V5z" />
-                </svg>
-              </a>
-              <a
-                data-cta
-                href="/resume.pdf"
-                target="_blank"
-                className="group relative inline-flex items-center gap-2 rounded-xl border border-white/10 bg-[#0e1116] px-4 py-2 text-sm font-medium text-white ring-1 ring-white/10 transition will-change-transform"
-                style={{ transform: "translate3d(var(--tx,0), var(--ty,0), 0) scale(var(--scale,1))" }}
-                onMouseMove={(e) => magnetMove(e.currentTarget as HTMLElement, e)}
-                onMouseLeave={(e) => magnetReset(e.currentTarget as HTMLElement)}
-              >
-                Resume
-                <svg width="16" height="16" viewBox="0 0 24 24" className="opacity-80" fill="currentColor">
-                  <path d="M5 20h14v-2H5v2zm7-18l-5.5 9h11z" />
-                </svg>
-              </a>
-            </div>
 
             {/* Stats */}
             <div className="mt-10 grid max-w-md grid-cols-3 gap-3">
@@ -831,18 +800,4 @@ function StatChip({ label, to }: { label: string; to: number }) {
   );
 }
 
-/* ============ Magnetic CTA helpers ============ */
-function magnetMove(el: HTMLElement, e: React.MouseEvent) {
-  const rect = el.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width - 0.5;
-  const y = (e.clientY - rect.top) / rect.height - 0.5;
-  el.style.setProperty("--tx", `${x * 6}px`);
-  el.style.setProperty("--ty", `${y * 6}px`);
-  el.style.setProperty("--scale", "1.015");
-}
-function magnetReset(el: HTMLElement) {
-  el.style.setProperty("--tx", `0px`);
-  el.style.setProperty("--ty", `0px`);
-  el.style.setProperty("--scale", "1");
-}
 

@@ -363,7 +363,7 @@ function TechSpreadSection() {
   const cubeSize = (tile: number) => Math.round(tile - 14);
 
   return (
-    <section ref={sectionRef} className="relative">
+    <section ref={sectionRef} className="relative" id="tech">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[#0b0d10]" />
 
       <div className="mx-auto max-w-6xl px-6 py-20">
