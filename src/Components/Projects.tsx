@@ -37,6 +37,16 @@ const projects: Project[] = [
     ],
   },
   {
+    title: "Akride",
+    url: "https://akride.netlify.app/",
+    tags: ["React", "CSS", "SPA"],
+    summary: "Clean SPA showcasing content with speed and simplicity.",
+    year: 2023,
+    shots: [
+      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&q=60&auto=format",
+    ],
+  },
+  {
     title: "Arkin PHI",
     url: "https://arkin-phi.vercel.app/",
     tags: ["Next.js", "GSAP", "UI/UX"],
@@ -62,15 +72,16 @@ const projects: Project[] = [
     ],
   },
   {
-    title: "Akride",
-    url: "https://akride.netlify.app/",
+    title: "As Freight Forwarding",
+    url: "https://asfreightforwarding.com/",
     tags: ["React", "CSS", "SPA"],
     summary: "Clean SPA showcasing content with speed and simplicity.",
-    year: 2023,
+    year: 2024,
     shots: [
       "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&q=60&auto=format",
     ],
   },
+  
 ];
 
 const screenshot = (url: string, w = 1200) =>
