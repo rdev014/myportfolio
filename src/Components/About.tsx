@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 /* ============ About Section ============ */
+/* ============ About Section ============ */
 export function AboutSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -83,29 +84,32 @@ export function AboutSection() {
           <div className="lg:col-span-7">
             <div className="flex items-center justify-between" data-kicker>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300">
-                About
+                Strategy & Execution
               </span>
               <span className="hidden h-px flex-1 bg-white/10 lg:block" />
             </div>
 
             <h2 data-title className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
-              I craft premium, performance-first interfaces with motion that serves the product.
+              Engineering <span className="text-blue-400">scalable architectures</span> with high-fidelity interaction design.
             </h2>
 
             <p data-body className="mt-4 text-zinc-300">
-              Strong UI systems, crisp motion, and rigorous performance. I work in Next.js, TypeScript, Tailwind, and GSAP
-              to ship experiences that feel physical and effortless—without visual noise.
+              I specialize in bridging the gap between complex <span className="text-white font-medium">Design Systems</span> and 
+              performant <span className="text-white font-medium">Full-stack integration</span>. Leveraging 
+              Next.js, TypeScript, and GSAP, I deliver production-ready interfaces that prioritize 
+              User Experience (UX) and technical SEO without compromising on aesthetic motion.
             </p>
             <p data-body className="mt-3 text-zinc-300">
-              My focus: maintainable component architectures, A11y-first interactions, and micro-interactions that
-              guide users and elevate brand feel.
+              My engineering philosophy centers on <span className="text-white font-medium">Maintainable Components</span>, 
+              rigorous A11y standards, and optimized <span className="text-white font-medium">Core Web Vitals</span>—ensuring 
+              every micro-interaction drives conversion and brand authority.
             </p>
 
             {/* Stats */}
             <div className="mt-10 grid max-w-md grid-cols-3 gap-3">
-              <StatChip label="Years" to={4} />
-              <StatChip label="Projects" to={30} />
-              <StatChip label="Clients" to={12} />
+              <StatChip label="Years Exp" to={4} />
+              <StatChip label="Deployments" to={30} />
+              <StatChip label="Partners" to={12} />
             </div>
           </div>
 

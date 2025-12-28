@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -23,8 +22,8 @@ const projects: Project[] = [
   {
     title: "Plexjar",
     url: "https://plexjar.com/",
-    tags: ["Next.js", "TypeScript", "Tailwind"],
-    summary: "Modern web experience with a focus on clarity and performance.",
+    tags: ["Next.js", "TypeScript", "Tailwind", "Front End Developer", "React Front End", "Front End Web Dev"],
+    summary: "Modern web experience with a focus on clarity and performance. Built as a front end developer emphasizing React front end techniques and front end web design.",
     year: 2024,
     metrics: [
       { label: "Performance", value: "Lighthouse 98" },
@@ -39,8 +38,8 @@ const projects: Project[] = [
   {
     title: "Akride",
     url: "https://akride.netlify.app/",
-    tags: ["React", "CSS", "SPA"],
-    summary: "Clean SPA showcasing content with speed and simplicity.",
+    tags: ["React", "CSS", "SPA", "Front End Engineer", "JavaScript For Front End", "HTML Front End"],
+    summary: "Clean SPA showcasing content with speed and simplicity. Developed with front end engineering principles, including JavaScript for front end interactions and HTML front end structure.",
     year: 2023,
     shots: [
       "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&q=60&auto=format",
@@ -49,8 +48,8 @@ const projects: Project[] = [
   {
     title: "Arkin PHI",
     url: "https://arkin-phi.vercel.app/",
-    tags: ["Next.js", "GSAP", "UI/UX"],
-    summary: "Interactive landing with premium feel and purposeful motion.",
+    tags: ["Next.js", "GSAP", "UI/UX", "Front End Web Design", "Front End Designer", "Front End Website Development"],
+    summary: "Interactive landing with premium feel and purposeful motion. Designed as a front end designer focusing on front end web design and front end website development for seamless user experiences.",
     year: 2024,
     metrics: [
       { label: "Motion", value: "Scroll scenes" },
@@ -63,8 +62,8 @@ const projects: Project[] = [
   {
     title: "Webspak",
     url: "https://webspak.vercel.app/",
-    tags: ["React", "Tailwind", "Animation"],
-    summary: "Product site with crisp design and smooth interactions.",
+    tags: ["React", "Tailwind", "Animation", "Front End Dev", "React Front End Developer", "Front End Application"],
+    summary: "Product site with crisp design and smooth interactions. Crafted by a React front end developer specializing in front end dev and building robust front end applications.",
     year: 2024,
     metrics: [
       { label: "Stack", value: "React + TW" },
@@ -72,16 +71,15 @@ const projects: Project[] = [
     ],
   },
   {
-    title: "As Freight Forwarding",
-    url: "https://asfreightforwarding.com/",
-    tags: ["React", "CSS", "SPA"],
-    summary: "Clean SPA showcasing content with speed and simplicity.",
-    year: 2024,
+    title: "WebMixStudio",
+    url: "https://webmixstudio.com/",
+    tags: ["React", "CSS", "SPA", "Dev Frontend", "Front And End Developer", "End CSS"],
+    summary: "WebMixStudio combines Full-Stack Engineering (React, Node, AWS) with Psychological Design to help B2B & SaaS companies scale. Stop losing leads to slow load times and confusing UI",
+    year: 2025,
     shots: [
       "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&q=60&auto=format",
     ],
   },
-  
 ];
 
 const screenshot = (url: string, w = 1200) =>
@@ -110,10 +108,10 @@ export function ProjectsSection() {
       const tl = gsap.timeline({
         scrollTrigger: { trigger: r, start: "top 70%", once: true },
       });
-      tl.from(r.querySelector("[data-kicker]"), { y: 14, opacity: 0, duration: 0.45, ease: "power3.out" })
-        .from(r.querySelector("[data-title]"), { y: 18, opacity: 0, duration: 0.55, ease: "power3.out" }, "-=0.2")
-        .from(r.querySelectorAll("[data-sub]"), { y: 12, opacity: 0, duration: 0.5, ease: "power3.out", stagger: 0.06 }, "-=0.2")
-        .from(".proj-item", { y: 26, opacity: 0, scale: 0.98, duration: 0.55, ease: "power3.out", stagger: 0.06 }, "-=0.1");
+      tl.from(r.querySelector("[data-kicker]"), { y: 14, opacity: 0, duration: 0.6, ease: "back.out(1.7)" })
+        .from(r.querySelector("[data-title]"), { y: 18, opacity: 0, duration: 0.7, ease: "back.out(1.7)" }, "-=0.3")
+        .from(r.querySelectorAll("[data-sub]"), { y: 12, opacity: 0, duration: 0.6, ease: "back.out(1.7)", stagger: 0.08 }, "-=0.3")
+        .from(".proj-item", { y: 26, opacity: 0, scale: 0.98, duration: 0.7, ease: "back.out(1.7)", stagger: 0.08 }, "-=0.2");
     }, sectionRef);
     return () => ctx.revert();
   }, []);
@@ -127,7 +125,7 @@ export function ProjectsSection() {
     if (prefersReduced.current) {
       track.scrollTo({ left, behavior: "smooth" });
     } else {
-      gsap.to(track, { scrollLeft: left, duration: 0.6, ease: "power3.out" });
+      gsap.to(track, { scrollLeft: left, duration: 0.8, ease: "power2.out" });
     }
   };
 
@@ -148,11 +146,11 @@ export function ProjectsSection() {
           nearest = i;
         }
         const ratio = Math.min(1, abs / (track.clientWidth * 0.7));
-        const scale = 1 - ratio * 0.08;
-        const ry = (d / track.clientWidth) * 12;
+        const scale = 1 - ratio * 0.06; // Reduced scale drop for smoother feel
+        const ry = (d / track.clientWidth) * 10; // Softer rotation
         el.style.setProperty("--cf-scale", String(scale));
         el.style.setProperty("--cf-ry", `${ry}deg`);
-        el.style.setProperty("--cf-opacity", String(1 - ratio * 0.25));
+        el.style.setProperty("--cf-opacity", String(1 - ratio * 0.2)); // Gentler opacity fade
       });
       setActive(nearest);
     };
@@ -186,6 +184,8 @@ export function ProjectsSection() {
       startScroll = track.scrollLeft;
       lastX = e.clientX;
       lastT = performance.now();
+      // Soften start by killing any ongoing animation
+      gsap.killTweensOf(track);
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -230,10 +230,10 @@ export function ProjectsSection() {
 
       // decide by velocity and drag distance
       const v = velocity; // px/ms
-      const flickThreshold = 0.7; // feels nice on both mouse and touch
+      const flickThreshold = 0.5; // Lowered for easier flicking
       const dx = e.clientX - startX;
       const card = itemRefs.current[active];
-      const distanceThreshold = (card?.clientWidth || 600) * 0.2;
+      const distanceThreshold = (card?.clientWidth || 600) * 0.15; // Reduced threshold for easier snaps
 
       if (Math.abs(v) > flickThreshold) {
         // negative v = moved left -> go to next
@@ -308,14 +308,14 @@ export function ProjectsSection() {
             <button
               aria-label="Previous"
               onClick={prev}
-              className="group flex items-center justify-center h-10 w-10 rounded-lg border border-white/8 bg-[#0f1319]/80 p-2 text-zinc-300 ring-1 ring-white/6 transition-transform hover:scale-105"
+              className="group flex items-center justify-center h-10 w-10 rounded-lg border border-white/8 bg-[#0f1319]/80 p-2 text-zinc-300 ring-1 ring-white/6 transition-all duration-300 ease-out hover:scale-110 active:scale-95"
             >
               ‹
             </button>
             <button
               aria-label="Next"
               onClick={next}
-              className="group flex items-center justify-center h-10 w-10 rounded-lg border border-white/8 bg-[#0f1319]/80 p-2 text-zinc-300 ring-1 ring-white/6 transition-transform hover:scale-105"
+              className="group flex items-center justify-center h-10 w-10 rounded-lg border border-white/8 bg-[#0f1319]/80 p-2 text-zinc-300 ring-1 ring-white/6 transition-all duration-300 ease-out hover:scale-110 active:scale-95"
             >
               ›
             </button>
@@ -338,7 +338,7 @@ export function ProjectsSection() {
               style={{
                 transform: "perspective(1200px) rotateY(var(--cf-ry,0)) scale(var(--cf-scale,1))",
                 opacity: "var(--cf-opacity,1)",
-                transition: "transform 400ms cubic-bezier(.2,.8,.2,1), opacity 300ms ease",
+                transition: "transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94)", // Smoother cubic-bezier
                 willChange: "transform, opacity",
               }}
             >
@@ -358,7 +358,7 @@ export function ProjectsSection() {
             <div
               aria-hidden
               style={{ width: `${((active + 1) / projects.length) * 100}%` }}
-              className="h-full bg-gradient-to-r from-violet-400 to-pink-400 transition-all duration-400"
+              className="h-full bg-gradient-to-r from-violet-400 to-pink-400 transition-all duration-500 ease-out" // Smoother progress
             />
           </div>
         </div>
@@ -378,13 +378,13 @@ export function ProjectsSection() {
                   href={modal.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-lg border border-white/8 bg-white/6 px-3 py-1.5 text-xs text-white ring-1 ring-white/6"
+                  className="rounded-lg border border-white/8 bg-white/6 px-3 py-1.5 text-xs text-white ring-1 ring-white/6 transition-all duration-200 ease-out hover:scale-105"
                 >
                   Open ↗
                 </a>
                 <button
                   onClick={() => setModal(null)}
-                  className="rounded-lg border border-white/8 bg-[#11151b] p-2 text-zinc-300 ring-1 ring-white/6 hover:text-white"
+                  className="rounded-lg border border-white/8 bg-[#11151b] p-2 text-zinc-300 ring-1 ring-white/6 hover:text-white transition-colors duration-200"
                   aria-label="Close"
                 >
                   ✕
@@ -411,7 +411,7 @@ export function ProjectsSection() {
           <div className="relative max-h-[85vh] w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-[#0d1014] ring-1 ring-white/10">
             <button
               onClick={() => setLightbox(null)}
-              className="absolute right-3 top-3 z-10 rounded-md bg-black/40 px-2 py-1 text-sm text-white ring-1 ring-white/10"
+              className="absolute right-3 top-3 z-10 rounded-md bg-black/40 px-2 py-1 text-sm text-white ring-1 ring-white/10 transition-all duration-200 hover:bg-black/60"
             >
               Close
             </button>
@@ -436,14 +436,14 @@ export function ProjectsSection() {
           50% { transform: translateY(-30px) scale(1.02); opacity: 0.9 }
           100% { transform: translateY(0px) scale(1); opacity: 0.8 }
         }
-        .animate-bg-shift { animation: bgShift 18s ease-in-out infinite; }
+        .animate-bg-shift { animation: bgShift 20s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; } /* Smoother animation timing */
 
         @keyframes slowSpin {
           0% { transform: rotate(0deg) translateZ(0); }
           100% { transform: rotate(360deg) translateZ(0); }
         }
-        .animate-slow-spin { animation: slowSpin 60s linear infinite; }
-        .animate-slow-spin-rev { animation: slowSpin 80s linear infinite reverse; }
+        .animate-slow-spin { animation: slowSpin 70s linear infinite; } /* Slower for ease */
+        .animate-slow-spin-rev { animation: slowSpin 90s linear infinite reverse; }
       `}</style>
     </section>
   );
@@ -490,8 +490,8 @@ function ProjectCard({
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const y = (e.clientY - r.top) / r.height;
-    const rx = (0.5 - y) * 8;
-    const ry = (x - 0.5) * 12;
+    const rx = (0.5 - y) * 6; // Reduced tilt for subtler, smoother motion
+    const ry = (x - 0.5) * 9; // Softer rotation
     el.style.setProperty("--rx", `${rx}deg`);
     el.style.setProperty("--ry", `${ry}deg`);
     el.style.setProperty("--mx", `${(x * 100).toFixed(2)}%`);
@@ -525,7 +525,7 @@ function ProjectCard({
       style={{
         transformStyle: "preserve-3d",
         transform: "rotateX(var(--rx,0)) rotateY(var(--ry,0))",
-        transition: "transform 180ms ease",
+        transition: "transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94)", // Smoother tilt transition
       }}
       aria-label={`${project.title} project card`}
     >
@@ -555,7 +555,7 @@ function ProjectCard({
         <img
           src={coverHi}
           alt={`${project.title} preview`}
-          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+          className="absolute inset-0 h-full w-full object-cover transition-all duration-700 ease-out" // Smoother image load
           style={{ opacity: imgLoaded ? 1 : 0, transform: "translateZ(14px) scale(1.01)" }}
           loading="lazy"
           decoding="async"
@@ -568,7 +568,7 @@ function ProjectCard({
           <iframe
             src={project.url}
             title={`${project.title} live preview`}
-            className="absolute inset-0 h-full w-full rounded-b-none transition-opacity duration-600"
+            className="absolute inset-0 h-full w-full rounded-b-none transition-all duration-800 ease-out" // Smoother iframe fade
             style={{ opacity: iframeLoaded ? 1 : 0, backdropFilter: "blur(0px)" }}
             sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups"
             loading="lazy"
@@ -579,7 +579,7 @@ function ProjectCard({
         {/* glare */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-400 group-hover:opacity-100"
           style={{
             background: "radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06), transparent 60%)",
             mixBlendMode: "screen",
@@ -606,7 +606,7 @@ function ProjectCard({
         <div className="flex items-center gap-2">
             <button
               onClick={onQuickPreview}
-              className="rounded-lg border border-white/8 bg-[#0e1116] px-2 py-1.5 text-xs text-zinc-300 ring-1 ring-white/6 transition-transform hover:scale-[1.03]"
+              className="rounded-lg border border-white/8 bg-[#0e1116] px-2 py-1.5 text-xs text-zinc-300 ring-1 ring-white/6 transition-all duration-200 ease-out hover:scale-[1.05]"
             >
               Expand
             </button>
@@ -614,7 +614,7 @@ function ProjectCard({
               href={project.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-white/8 bg-white/6 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/6 transition-transform hover:translate-x-0.5"
+              className="rounded-lg border border-white/8 bg-white/6 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/6 transition-all duration-200 ease-out hover:translate-x-0.5 hover:scale-105"
             >
               Visit →
             </a>
@@ -626,7 +626,7 @@ function ProjectCard({
           {project.tags.map((t) => (
             <span
               key={t}
-              className="rounded-full bg-white/3 px-2 py-1 text-[11px] font-medium text-zinc-300 ring-1 ring-white/4"
+              className="rounded-full bg-white/3 px-2 py-1 text-[11px] font-medium text-zinc-300 ring-1 ring-white/4 transition-all duration-200 hover:bg-white/5"
             >
               {t}
             </span>
@@ -642,7 +642,7 @@ function ProjectCard({
                 {project.metrics.map((m, i) => (
                   <div
                     key={i}
-                    className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-zinc-300 ring-1 ring-white/10"
+                    className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-zinc-300 ring-1 ring-white/10 transition-all duration-200 hover:bg-white/[0.08]"
                     style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
                   >
                     <div className="text-[10px] uppercase tracking-wide text-white/70">{m.label}</div>
@@ -659,7 +659,7 @@ function ProjectCard({
                   <button
                     key={i}
                     onClick={() => onShowImage(src)}
-                    className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border border-white/10 ring-1 ring-white/10"
+                    className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border border-white/10 ring-1 ring-white/10 transition-all duration-200 hover:scale-105 hover:border-white/20"
                     title="Open image"
                   >
                     <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
