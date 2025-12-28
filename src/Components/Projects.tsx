@@ -30,10 +30,7 @@ const projects: Project[] = [
       { label: "Role", value: "Front‑end" },
       { label: "Focus", value: "UX • Speed" },
     ],
-    shots: [
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=640&q=60&auto=format",
-      "https://images.unsplash.com/photo-1557800636-894a64c1696f?w=640&q=60&auto=format",
-    ],
+   
   },
   {
     title: "Akride",
@@ -41,9 +38,7 @@ const projects: Project[] = [
     tags: ["React", "CSS", "SPA", "Front End Engineer", "JavaScript For Front End", "HTML Front End"],
     summary: "Clean SPA showcasing content with speed and simplicity. Developed with front end engineering principles, including JavaScript for front end interactions and HTML front end structure.",
     year: 2023,
-    shots: [
-      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&q=60&auto=format",
-    ],
+   
   },
   {
     title: "Arkin PHI",
@@ -55,9 +50,7 @@ const projects: Project[] = [
       { label: "Motion", value: "Scroll scenes" },
       { label: "UX", value: "Haptic + Delight" },
     ],
-    shots: [
-      "https://images.unsplash.com/photo-1551281044-8b59a4f16770?w=640&q=60&auto=format",
-    ],
+    
   },
   {
     title: "Webspak",
@@ -76,9 +69,7 @@ const projects: Project[] = [
     tags: ["React", "CSS", "SPA", "Dev Frontend", "Front And End Developer", "End CSS"],
     summary: "WebMixStudio combines Full-Stack Engineering (React, Node, AWS) with Psychological Design to help B2B & SaaS companies scale. Stop losing leads to slow load times and confusing UI",
     year: 2025,
-    shots: [
-      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&q=60&auto=format",
-    ],
+    
   },
 ];
 
