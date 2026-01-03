@@ -2,213 +2,238 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { CpuChipIcon } from "@heroicons/react/24/outline";
 
+// --- TYPES ---
+interface Point { x: number; y: number; }
+interface LightningBolt {
+  segments: Point[];
+  opacity: number;
+  width: number;
+  lifeSpeed: number;
+}
+
 export default function HeroSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const lightningRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
+  // Array of refs to track the position of the 4 menu items
+  const menuItemsRef = useRef<(HTMLDivElement | null)[]>([]);
+
   const [isEngaged, setIsEngaged] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-  const [dataArray, setDataArray] = useState<Uint8Array | null>(null);
 
-  // 1. ELITE LIGHTNING ENGINE (With Sub-Branches)
-  const drawLightning = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    ctx.clearRect(0, 0, width, height);
-    ctx.beginPath();
-    ctx.strokeStyle = "rgba(129, 140, 248, 0.8)"; // Indigo tint
-    ctx.lineWidth = 1;
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "#ffffff";
+  const activeBolts = useRef<LightningBolt[]>([]);
+  const flashIntensity = useRef(0);
 
-    let x = Math.random() * width;
-    let y = 0;
-    ctx.moveTo(x, y);
-
-    const segments = 15;
-    for (let i = 0; i < segments; i++) {
-      x += (Math.random() * 120 - 60);
-      y += height / segments;
-      ctx.lineTo(x, y);
-      
-      if (Math.random() > 0.9) { // Secondary branch
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + 50, y + 30);
-        ctx.moveTo(x, y);
-      }
-    }
-    ctx.stroke();
-  };
-
-  const startExperience = () => {
-    if (isEngaged || isComplete) return;
-    const AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
-    const ctx = new AudioContext();
-    const source = ctx.createMediaElementSource(audioRef.current!);
-    const analyserNode = ctx.createAnalyser();
-    analyserNode.fftSize = 256; 
-    source.connect(analyserNode);
-    analyserNode.connect(ctx.destination);
-    setAnalyser(analyserNode);
-    setDataArray(new Uint8Array(analyserNode.frequencyBinCount));
-    
-    audioRef.current!.loop = false;
-    audioRef.current!.play();
-    setIsEngaged(true);
-
-    audioRef.current!.onended = () => {
-      setIsComplete(true);
-      gsap.to(".ui-transition", { opacity: 1, y: 0, duration: 1.5, stagger: 0.2, ease: "expo.out" });
-    };
-  };
-
+  // --- RESIZE HANDLER ---
   useEffect(() => {
-    if (!analyser || !dataArray || isComplete) return;
-
-    const rafLoop = () => {
-      analyser.getByteFrequencyData(dataArray);
-      const lowFreq = dataArray.slice(0, 12).reduce((a, b) => a + b, 0) / 12;
-      const peak = lowFreq / 255;
-
-      if (peak > 0.62) {
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext("2d");
-        if (ctx && canvas) drawLightning(ctx, canvas.width, canvas.height);
-
-        // STROBE EFFECT (Next-level lightning)
-        const tl = gsap.timeline();
-        tl.to(lightningRef.current, { opacity: peak * 0.8, duration: 0.05 })
-          .to(lightningRef.current, { opacity: 0, duration: 0.03 })
-          .to(lightningRef.current, { opacity: peak * 0.4, duration: 0.03 })
-          .set(".glitch-text", { 
-            skewX: () => Math.random() * 40 - 20,
-            x: () => Math.random() * 20 - 10,
-            filter: "contrast(4) brightness(2) drop-shadow(0 0 10px white)"
-          })
-          .to([lightningRef.current, canvasRef.current], { opacity: 0, duration: 0.6, ease: "power2.out" })
-          .set(".glitch-text", { skewX: 0, x: 0, filter: "none" });
+    const handleResize = () => {
+      if (canvasRef.current) {
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
       }
-      requestAnimationFrame(rafLoop);
     };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    const frame = requestAnimationFrame(rafLoop);
-    return () => cancelAnimationFrame(frame);
-  }, [analyser, dataArray, isComplete]);
+  // --- FRACTAL LIGHTNING LOGIC ---
+  const createBoltPath = (start: Point, end: Point, displacement: number): Point[] => {
+    if (displacement < 4) return [start, end];
+    const midX = (start.x + end.x) / 2;
+    const midY = (start.y + end.y) / 2;
+    const jitter = (Math.random() - 0.5) * displacement;
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const midPoint = {
+      x: midX + (-(dy / len) * jitter),
+      y: midY + ((dx / len) * jitter)
+    };
+    return [
+      ...createBoltPath(start, midPoint, displacement / 2),
+      ...createBoltPath(midPoint, end, displacement / 2)
+    ];
+  };
+
+  const strikeMenuLink = (index: number) => {
+    const el = menuItemsRef.current[index];
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const targetX = rect.left + rect.width / 2;
+    const targetY = rect.top + rect.height / 2;
+
+    // Create the bolt from top to the specific menu item
+    const path = createBoltPath(
+      { x: targetX + (Math.random() * 400 - 200), y: -50 }, 
+      { x: targetX, y: targetY }, 
+      150
+    );
+
+    activeBolts.current.push({
+      segments: path,
+      opacity: 1.2,
+      width: 3,
+      lifeSpeed: 0.04
+    });
+
+    // Visual feedback for the strike
+    flashIntensity.current = 0.7;
+    
+    // Reveal the specific item with a "power-on" glow
+    gsap.to(el, {
+      opacity: 1,
+      y: 0,
+      duration: 0.4,
+      ease: "power4.out",
+      onStart: () => {
+        gsap.fromTo(el, 
+          { filter: "brightness(10) blur(10px)" }, 
+          { filter: "brightness(1) blur(0px)", duration: 1 }
+        );
+      }
+    });
+  };
+
+  const startInitialization = () => {
+    if (isEngaged) return;
+    setIsEngaged(true);
+    audioRef.current?.play();
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setIsComplete(true);
+        // Reveal the center title last
+        gsap.to(".center-content", { opacity: 1, scale: 1, duration: 1.5, ease: "expo.out" });
+      }
+    });
+
+    // Sequence the 4 strikes
+    [0, 1, 2, 3].forEach((val, i) => {
+      tl.add(() => strikeMenuLink(val), i * 0.7 + 0.5); 
+    });
+  };
+
+  // --- RENDER LOOP ---
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (flashIntensity.current > 0) {
+        ctx.fillStyle = `rgba(99, 102, 241, ${flashIntensity.current * 0.15})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        flashIntensity.current *= 0.88;
+      }
+
+      activeBolts.current.forEach((bolt, index) => {
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = "#6366f1";
+        ctx.globalCompositeOperation = "lighter";
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(255, 255, 255, ${bolt.opacity})`;
+        ctx.lineWidth = bolt.width;
+        
+        if (bolt.segments.length > 0) {
+          ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
+          bolt.segments.forEach(p => ctx.lineTo(p.x, p.y));
+        }
+        ctx.stroke();
+        bolt.opacity -= bolt.lifeSpeed;
+        if (bolt.opacity <= 0) activeBolts.current.splice(index, 1);
+      });
+
+      requestAnimationFrame(render);
+    };
+    const raf = requestAnimationFrame(render);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   return (
     <section 
-      ref={sectionRef}
-      onClick={startExperience}
-      className="relative flex min-h-screen flex-col items-center justify-center bg-[#050505] overflow-hidden cursor-none selection:bg-indigo-500/30"
+      ref={containerRef}
+      className="relative flex min-h-screen flex-col items-center justify-center bg-[#050505] overflow-hidden"
     >
       <audio ref={audioRef} src="/horror.mp3" />
-
-      {/* BACKGROUND FX LAYERS */}
-      <canvas ref={canvasRef} width={2000} height={1200} className="pointer-events-none absolute inset-0 z-40 opacity-0 mix-blend-screen" />
-      <div ref={lightningRef} className="pointer-events-none absolute inset-0 z-50 bg-white opacity-0 mix-blend-overlay" />
+      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-40 h-full w-full" />
       
-      {/* SCANLINE EFFECT */}
-      <div className="pointer-events-none absolute inset-0 z-30 opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]" />
-      
-      {/* VIGNETTE */}
-      <div className="pointer-events-none absolute inset-0 z-20 shadow-[inset_0_0_200px_rgba(0,0,0,1)]" />
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#050505] to-[#050505]" />
 
-      {/* CORE INTERFACE */}
-      <div className="z-10 grid w-full max-w-screen-2xl grid-cols-1 md:grid-cols-3 px-20 items-center gap-32 md:gap-0">
+      <div className="glitch-ui z-20 grid w-full max-w-screen-2xl grid-cols-1 md:grid-cols-3 px-8 md:px-12 items-center">
         
-        {/* LEFT NAV */}
-        <div className="ui-transition flex flex-col items-center md:items-start gap-20 order-2 md:order-1">
-          <MenuLink index="01" label="ARCHIVES" sub="Selected Work" isComplete={isComplete} />
-          <MenuLink index="02" label="ENGINE" sub="Technical Stack" isComplete={isComplete} />
-        </div>
-
-        {/* CENTER ANCHOR */}
-        <div className="flex flex-col items-center text-center order-1 md:order-2">
-          <div className={`mb-16 transition-all duration-[2s] ${isComplete ? 'scale-125' : 'animate-pulse scale-100'}`}>
-             <TechLogo active={!isComplete} />
+        {/* LEFT MENU (Strikes 1 & 2) */}
+        <div className="flex flex-col gap-16 items-center md:items-start order-2 md:order-1 mt-10 md:mt-0">
+          <div ref={el => menuItemsRef.current[0] = el} className="opacity-0 translate-y-10">
+            <MenuLink index="01" label="PROJECTS" sub="Visual Code" />
           </div>
-          
-          <div className="space-y-6">
-            <h1 className="glitch-text text-[11px] font-bold tracking-[1.2em] text-zinc-600 uppercase pl-[1.2em]">
-              {isComplete ? "Access Granted" : " Rahul Dev // Terminal"}
-            </h1>
-            <h2 className="glitch-text text-7xl md:text-6xl font-thin tracking-tighter text-white leading-none">
-              FRONT END <br /> 
-              <span className="font-black italic text-transparent text-7xl md:text-9xl stroke-text opacity-90">ENGINEER</span>
-            </h2>
-          </div>
-          
-          {/* PROGRESS BAR */}
-          <div className="mt-20 h-px w-64 relative bg-zinc-900 overflow-hidden">
-            <div className={`h-full bg-white transition-all duration-[20s] ease-linear ${isEngaged ? 'w-full' : 'w-0'}`} />
-            {isComplete && <div className="absolute inset-0 bg-indigo-500 animate-pulse" />}
+          <div ref={el => menuItemsRef.current[1] = el} className="opacity-0 translate-y-10">
+            <MenuLink index="02" label="STACK" sub="Tech Core" />
           </div>
         </div>
 
-        {/* RIGHT NAV */}
-        <div className="ui-transition flex flex-col items-center md:items-end gap-20 order-3">
-          <MenuLink index="03" label="LOGIC" sub="About Core" isComplete={isComplete} />
-          <MenuLink index="04" label="SIGNAL" sub="Get in Touch" isComplete={isComplete} />
+        {/* CENTER TITLE (Revealed after all strikes) */}
+        <div className="center-content opacity-0 scale-90 flex flex-col items-center text-center py-10 md:py-20 relative order-1 md:order-2">
+          <h1 className="text-[10px] font-bold tracking-[1.5em] text-zinc-600 uppercase mb-8">Neural Engine Active</h1>
+          <h2 className="text-6xl md:text-8xl lg:text-7xl font-black italic text-white tracking-tighter leading-[0.85] relative z-10">
+            FRONT END <br /> <span className="stroke-text text-transparent text-6xl md:text-8xl lg:text-9xl">DEVELOPER</span>
+          </h2>
+          <div className="mt-12 h-[1px] w-48 bg-zinc-900 relative overflow-hidden">
+            <div className={`h-full bg-white transition-all duration-[2s] ${isComplete ? 'w-full' : 'w-0'}`} />
+          </div>
+        </div>
+
+        {/* RIGHT MENU (Strikes 3 & 4) */}
+        <div className="flex flex-col gap-16 items-center md:items-end order-3 mt-10 md:mt-0">
+          <div ref={el => menuItemsRef.current[2] = el} className="opacity-0 translate-y-10">
+            <MenuLink index="03" label="ABOUT" sub="The Logic" />
+          </div>
+          <div ref={el => menuItemsRef.current[3] = el} className="opacity-0 translate-y-10">
+            <MenuLink index="04" label="SIGNAL" sub="Secure Line" />
+          </div>
         </div>
       </div>
 
-      {/* INITIALIZATION OVERLAY */}
-      {!isEngaged && !isComplete && (
-        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-[#050505] backdrop-blur-3xl transition-opacity duration-1000">
-          <div className="relative group cursor-pointer mb-10">
-             <div className="absolute -inset-4 rounded-full bg-indigo-500/10 animate-ping group-hover:bg-indigo-500/20" />
-             <CpuChipIcon className="h-16 w-16 text-white transition-all duration-500 group-hover:scale-110" />
+      {!isEngaged && (
+        <div 
+          onClick={startInitialization}
+          className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-[#030305]/95 backdrop-blur-sm cursor-pointer"
+        >
+          <div className="relative group mb-8">
+             <div className="absolute -inset-6 rounded-full bg-indigo-500/20 animate-ping" />
+             <CpuChipIcon className="relative h-16 w-16 text-white" />
           </div>
-          <p className="text-[12px] font-black tracking-[0.8em] text-white uppercase animate-pulse">Initialize Interface</p>
-          <p className="mt-4 text-[9px] text-zinc-600 uppercase tracking-widest font-mono">One-Time Audio Sync Required</p>
+          <p className="text-[11px] tracking-[1em] text-white uppercase animate-pulse">Establish Connection</p>
         </div>
       )}
 
-      {/* FOOTER HUD */}
-      <div className="absolute bottom-12 w-full flex justify-between px-16 text-[8px] font-mono tracking-[0.5em] text-zinc-800 uppercase">
-        <div className="flex gap-8">
-          <span>LATENCY: 14MS</span>
-          <span className={isEngaged && !isComplete ? "text-red-900 animate-pulse" : ""}>
-            {isComplete ? "SYS: STABLE" : "SYS: BOOTING"}
-          </span>
-        </div>
-        <span>©2024_RAHUL_DEV_OS</span>
+      <div className="absolute bottom-10 w-full flex justify-between px-8 md:px-16 text-[8px] font-mono tracking-widest text-zinc-800 uppercase">
+        <span>Impact_OS: v4.0.1</span>
+        <span>©2024_RRRR</span>
       </div>
 
       <style>{`
-        .stroke-text { -webkit-text-stroke: 1px rgba(255,255,255,0.8); }
-        .cursor-none { cursor: none; }
+        .stroke-text { -webkit-text-stroke: 1px rgba(255,255,255,0.7); }
+        .glitch-ui { will-change: filter, transform; }
       `}</style>
     </section>
   );
 }
 
-function MenuLink({ index, label, sub, isComplete }: { index: string, label: string; sub: string, isComplete: boolean }) {
+function MenuLink({ index, label, sub }: { index: string, label: string; sub: string }) {
   return (
-    <a href={`#${label.toLowerCase()}`} className="group flex flex-col items-center md:items-start relative">
-      <div className="flex items-baseline gap-4">
-        <span className="text-[10px] font-bold text-indigo-500/40 group-hover:text-indigo-400 transition-colors">{index}</span>
-        <span className="text-5xl md:text-6xl font-extralight tracking-tighter text-white transition-all duration-700 group-hover:tracking-[0.1em] group-hover:italic group-hover:opacity-100 opacity-20">
+    <div className="group cursor-pointer flex flex-col items-center md:items-start">
+      <div className="flex items-center gap-3">
+        <span className="text-[10px] font-mono text-indigo-500/50 group-hover:text-indigo-400">{index}</span>
+        <h3 className="text-4xl md:text-5xl lg:text-6xl font-extralight tracking-tighter text-white/40 group-hover:text-white transition-all duration-500 ease-out">
           {label}
-        </span>
+        </h3>
       </div>
-      <span className={`text-[9px] uppercase tracking-[0.3em] mt-2 transition-colors duration-1000 ${isComplete ? 'text-zinc-500' : 'text-zinc-800'} group-hover:text-zinc-200`}>
-        // {sub}
-      </span>
-    </a>
-  );
-}
-
-function TechLogo({ active }: { active: boolean }) {
-  return (
-    <svg width="100" height="100" viewBox="0 0 100 100" className={`transition-all duration-[2s] ${active ? 'opacity-100 rotate-0' : 'opacity-40 rotate-45'}`}>
-      <rect x="20" y="20" width="60" height="60" fill="none" stroke="white" strokeWidth="0.5" strokeDasharray="10 5" />
-      <path d="M50 0 L50 15 M50 85 L50 100 M0 50 L15 50 M85 50 L100 50" stroke="white" strokeWidth="1" />
-      <circle cx="50" cy="50" r="15" fill="none" stroke="white" strokeWidth="0.2" strokeDasharray="2 2" />
-      <circle cx="50" cy="50" r="5" fill="white" className={active ? 'animate-ping' : ''} />
-    </svg>
+      <p className="text-[9px] tracking-[0.4em] text-zinc-700 mt-2 uppercase transition-colors group-hover:text-indigo-400/80">// {sub}</p>
+    </div>
   );
 }
