@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 /* ============ About Section ============ */
 /* ============ About Section ============ */
-export function AboutSection() {
+export function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export function AboutSection() {
           <div className="lg:col-span-7">
             <div className="flex items-center justify-between" data-kicker>
               <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300">
-                Strategy & Execution
+               About
               </span>
               <span className="hidden h-px flex-1 bg-white/10 lg:block" />
             </div>

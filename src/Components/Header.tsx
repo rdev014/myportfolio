@@ -2,9 +2,9 @@ import { ArrowUpRightIcon } from "@heroicons/react/16/solid";
 import { useState, useEffect } from "react";
 
 const navigation = [
-  { name: "About", href: "#about", code: "01" },
-  { name: "Projects", href: "#projects", code: "02" },
-  { name: "Tech Specs", href: "#tech", code: "03" },
+  { name: "About", href: "about", code: "01" },
+  { name: "Projects", href: "projects", code: "02" },
+  { name: "Tech Specs", href: "tech", code: "03" },
 ];
 
 export default function Header() {
