@@ -13,8 +13,8 @@ export default function Footer() {
     <footer className="relative bg-[#020204] text-white pt-32 pb-10 overflow-hidden border-t border-white/5">
       {/* BACKGROUND WATERMARK - Huge, subtle text for massive scale */}
       <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 pointer-events-none select-none">
-        <h2 className="text-[25vw] font-black text-white/[0.02] leading-none tracking-tighter uppercase italic whitespace-nowrap">
-          RAHUL_DEV
+        <h2 className="text-[18vw] font-black text-white/[0.02] leading-none tracking-tighter uppercase italic whitespace-nowrap px-12">
+          RAHUL DEV
         </h2>
       </div>
 
