@@ -9,182 +9,206 @@ export default function HeroSection() {
   const audioRef = useRef<HTMLAudioElement>(null);
   
   const [isEngaged, setIsEngaged] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [dataArray, setDataArray] = useState<Uint8Array | null>(null);
 
-  // 1. Procedural Lightning Drawing Logic
+  // 1. ELITE LIGHTNING ENGINE (With Sub-Branches)
   const drawLightning = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     ctx.clearRect(0, 0, width, height);
     ctx.beginPath();
-    ctx.strokeStyle = "rgba(200, 220, 255, 1)";
-    ctx.lineWidth = 2;
-    ctx.shadowBlur = 30;
-    ctx.shadowColor = "#818cf8";
+    ctx.strokeStyle = "rgba(129, 140, 248, 0.8)"; // Indigo tint
+    ctx.lineWidth = 1;
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "#ffffff";
 
-    // Start Top-Right
-    let curX = width - Math.random() * 200;
-    let curY = 0;
-    ctx.moveTo(curX, curY);
+    let x = Math.random() * width;
+    let y = 0;
+    ctx.moveTo(x, y);
 
-    const segments = 10;
+    const segments = 15;
     for (let i = 0; i < segments; i++) {
-      // Slant toward Bottom-Left
-      curX -= (width / segments) + (Math.random() * 80 - 40);
-      curY += (height / segments) + (Math.random() * 20 - 10);
-      ctx.lineTo(curX, curY);
+      x += (Math.random() * 120 - 60);
+      y += height / segments;
+      ctx.lineTo(x, y);
+      
+      if (Math.random() > 0.9) { // Secondary branch
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 50, y + 30);
+        ctx.moveTo(x, y);
+      }
     }
     ctx.stroke();
   };
 
-  // 2. Audio Context Initialization
   const startExperience = () => {
-    if (isEngaged) return;
+    if (isEngaged || isComplete) return;
     const AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
     const ctx = new AudioContext();
     const source = ctx.createMediaElementSource(audioRef.current!);
     const analyserNode = ctx.createAnalyser();
-    
     analyserNode.fftSize = 256; 
     source.connect(analyserNode);
     analyserNode.connect(ctx.destination);
-
     setAnalyser(analyserNode);
     setDataArray(new Uint8Array(analyserNode.frequencyBinCount));
     
+    audioRef.current!.loop = false;
     audioRef.current!.play();
     setIsEngaged(true);
+
+    audioRef.current!.onended = () => {
+      setIsComplete(true);
+      gsap.to(".ui-transition", { opacity: 1, y: 0, duration: 1.5, stagger: 0.2, ease: "expo.out" });
+    };
   };
 
-  // 3. Audio-Reactive "Storm" Effect
   useEffect(() => {
-    if (!analyser || !dataArray) return;
+    if (!analyser || !dataArray || isComplete) return;
 
     const rafLoop = () => {
       analyser.getByteFrequencyData(dataArray);
-      
-      // Calculate peaks (Thunder/Low & Crackle/High)
-      const lowFreq = dataArray.slice(0, 15).reduce((a, b) => a + b, 0) / 15;
-      const highFreq = dataArray.slice(40, 80).reduce((a, b) => a + b, 0) / 40;
-      const combinedPeak = (lowFreq * 0.4 + highFreq * 0.6) / 255;
+      const lowFreq = dataArray.slice(0, 12).reduce((a, b) => a + b, 0) / 12;
+      const peak = lowFreq / 255;
 
-      if (combinedPeak > 0.48) {
+      if (peak > 0.62) {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext("2d");
         if (ctx && canvas) drawLightning(ctx, canvas.width, canvas.height);
 
+        // STROBE EFFECT (Next-level lightning)
         const tl = gsap.timeline();
-        
-        // Multi-layered flash and glitch
-        tl.to(lightningRef.current, { opacity: combinedPeak * 1.2, duration: 0.03 })
-          .to(canvasRef.current, { opacity: 1, duration: 0.02 })
-          .set(".glitch-target", { 
-            x: Math.random() * 20 - 10,
-            filter: "invert(1) contrast(3)",
-            textShadow: "4px 0 #0ff, -4px 0 #f0f" 
+        tl.to(lightningRef.current, { opacity: peak * 0.8, duration: 0.05 })
+          .to(lightningRef.current, { opacity: 0, duration: 0.03 })
+          .to(lightningRef.current, { opacity: peak * 0.4, duration: 0.03 })
+          .set(".glitch-text", { 
+            skewX: () => Math.random() * 40 - 20,
+            x: () => Math.random() * 20 - 10,
+            filter: "contrast(4) brightness(2) drop-shadow(0 0 10px white)"
           })
-          .to(sectionRef.current, { x: Math.random() * 10 - 5, duration: 0.05 })
-          .to([lightningRef.current, canvasRef.current], { opacity: 0, duration: 0.5, ease: "power4.out" })
-          .set(".glitch-target", { x: 0, filter: "none", textShadow: "none" })
-          .set(sectionRef.current, { x: 0 });
+          .to([lightningRef.current, canvasRef.current], { opacity: 0, duration: 0.6, ease: "power2.out" })
+          .set(".glitch-text", { skewX: 0, x: 0, filter: "none" });
       }
       requestAnimationFrame(rafLoop);
     };
 
     const frame = requestAnimationFrame(rafLoop);
     return () => cancelAnimationFrame(frame);
-  }, [analyser, dataArray]);
+  }, [analyser, dataArray, isComplete]);
 
   return (
     <section 
       ref={sectionRef}
       onClick={startExperience}
-      className="relative flex min-h-screen flex-col items-center justify-center bg-[#030304] overflow-hidden cursor-pointer"
+      className="relative flex min-h-screen flex-col items-center justify-center bg-[#050505] overflow-hidden cursor-none selection:bg-indigo-500/30"
     >
-      <audio ref={audioRef} src="/horror.mp3" loop />
+      <audio ref={audioRef} src="/horror.mp3" />
 
-      {/* Procedural Lightning Canvas */}
-      <canvas 
-        ref={canvasRef} 
-        width={1920} height={1080} 
-        className="pointer-events-none absolute inset-0 z-40 h-full w-full opacity-0 mix-blend-screen"
-      />
+      {/* BACKGROUND FX LAYERS */}
+      <canvas ref={canvasRef} width={2000} height={1200} className="pointer-events-none absolute inset-0 z-40 opacity-0 mix-blend-screen" />
+      <div ref={lightningRef} className="pointer-events-none absolute inset-0 z-50 bg-white opacity-0 mix-blend-overlay" />
+      
+      {/* SCANLINE EFFECT */}
+      <div className="pointer-events-none absolute inset-0 z-30 opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%]" />
+      
+      {/* VIGNETTE */}
+      <div className="pointer-events-none absolute inset-0 z-20 shadow-[inset_0_0_200px_rgba(0,0,0,1)]" />
 
-      {/* Primary Flash Layer */}
-      <div ref={lightningRef} className="pointer-events-none absolute inset-0 z-50 bg-indigo-50 opacity-0 mix-blend-overlay" />
-
-      {/* Atmospheric Vignette */}
-      <div className="pointer-events-none absolute inset-0 z-30 bg-[radial-gradient(circle,transparent_20%,#000_120%)]" />
-
-      {/* Noise Texture */}
-      <div className="absolute inset-0 z-0 opacity-[0.03]" 
-           style={{ backgroundImage: `url("https://grainy-gradients.vercel.app/noise.svg")` }} />
-
-      <div className="z-10 grid w-full max-w-7xl grid-cols-1 md:grid-cols-3 px-10 items-center gap-20">
+      {/* CORE INTERFACE */}
+      <div className="z-10 grid w-full max-w-screen-2xl grid-cols-1 md:grid-cols-3 px-20 items-center gap-32 md:gap-0">
         
-        <div className="flex flex-col items-center md:items-end gap-12 order-2 md:order-1">
-          <MenuLink href="#work" label="Projects" sub="01 // Selection" />
-          <MenuLink href="#stack" label="Stack" sub="02 // Engine" />
+        {/* LEFT NAV */}
+        <div className="ui-transition flex flex-col items-center md:items-start gap-20 order-2 md:order-1">
+          <MenuLink index="01" label="ARCHIVES" sub="Selected Work" isComplete={isComplete} />
+          <MenuLink index="02" label="ENGINE" sub="Technical Stack" isComplete={isComplete} />
         </div>
 
+        {/* CENTER ANCHOR */}
         <div className="flex flex-col items-center text-center order-1 md:order-2">
-          <div className="mb-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] animate-pulse">
-             <TechLogo />
+          <div className={`mb-16 transition-all duration-[2s] ${isComplete ? 'scale-125' : 'animate-pulse scale-100'}`}>
+             <TechLogo active={!isComplete} />
           </div>
           
-          <h1 className="glitch-target text-[16px] tracking-[0.8em] text-zinc-500 uppercase mb-4">
-            Rahul Dev
-          </h1>
-          <h2 className="glitch-target text-6xl md:text-6xl font-thin tracking-tighter text-white leading-none">
-            FRONT END <br /> <span className="font-black md:text-8xl  italic opacity-80 stroke-text text-transparent">ENGINEER</span>
-          </h2>
+          <div className="space-y-6">
+            <h1 className="glitch-text text-[11px] font-bold tracking-[1.2em] text-zinc-600 uppercase pl-[1.2em]">
+              {isComplete ? "Access Granted" : " Rahul Dev // Terminal"}
+            </h1>
+            <h2 className="glitch-text text-7xl md:text-6xl font-thin tracking-tighter text-white leading-none">
+              FRONT END <br /> 
+              <span className="font-black italic text-transparent text-7xl md:text-9xl stroke-text opacity-90">ENGINEER</span>
+            </h2>
+          </div>
           
-          <div className="mt-12 flex items-center gap-4">
-            <span className="h-px w-8 bg-zinc-800" />
-            <p className="text-[9px] uppercase tracking-[0.4em] text-zinc-600">Sync Active</p>
-            <span className="h-px w-8 bg-zinc-800" />
+          {/* PROGRESS BAR */}
+          <div className="mt-20 h-px w-64 relative bg-zinc-900 overflow-hidden">
+            <div className={`h-full bg-white transition-all duration-[20s] ease-linear ${isEngaged ? 'w-full' : 'w-0'}`} />
+            {isComplete && <div className="absolute inset-0 bg-indigo-500 animate-pulse" />}
           </div>
         </div>
 
-        <div className="flex flex-col items-center md:items-start gap-12 order-3">
-          <MenuLink href="#about" label="Info" sub="03 // Logic" />
-          <MenuLink href="#contact" label="Contact" sub="04 // Signal" />
+        {/* RIGHT NAV */}
+        <div className="ui-transition flex flex-col items-center md:items-end gap-20 order-3">
+          <MenuLink index="03" label="LOGIC" sub="About Core" isComplete={isComplete} />
+          <MenuLink index="04" label="SIGNAL" sub="Get in Touch" isComplete={isComplete} />
         </div>
       </div>
 
-      {!isEngaged && (
-        <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl transition-opacity duration-1000">
-          <CpuChipIcon className="h-12 w-12 text-indigo-500/50 mb-6 animate-pulse" />
-          <p className="text-[10px] tracking-[0.6em] text-white uppercase animate-pulse">Initialize Neural Link</p>
-          <p className="mt-4 text-[8px] text-zinc-600 uppercase tracking-[0.3em]">Audio Warning: High Intensity</p>
+      {/* INITIALIZATION OVERLAY */}
+      {!isEngaged && !isComplete && (
+        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-[#050505] backdrop-blur-3xl transition-opacity duration-1000">
+          <div className="relative group cursor-pointer mb-10">
+             <div className="absolute -inset-4 rounded-full bg-indigo-500/10 animate-ping group-hover:bg-indigo-500/20" />
+             <CpuChipIcon className="h-16 w-16 text-white transition-all duration-500 group-hover:scale-110" />
+          </div>
+          <p className="text-[12px] font-black tracking-[0.8em] text-white uppercase animate-pulse">Initialize Interface</p>
+          <p className="mt-4 text-[9px] text-zinc-600 uppercase tracking-widest font-mono">One-Time Audio Sync Required</p>
         </div>
       )}
 
-      <style jsx>{`
-        .stroke-text { -webkit-text-stroke: 1px rgba(255,255,255,0.4); }
+      {/* FOOTER HUD */}
+      <div className="absolute bottom-12 w-full flex justify-between px-16 text-[8px] font-mono tracking-[0.5em] text-zinc-800 uppercase">
+        <div className="flex gap-8">
+          <span>LATENCY: 14MS</span>
+          <span className={isEngaged && !isComplete ? "text-red-900 animate-pulse" : ""}>
+            {isComplete ? "SYS: STABLE" : "SYS: BOOTING"}
+          </span>
+        </div>
+        <span>©2024_RAHUL_DEV_OS</span>
+      </div>
+
+      <style>{`
+        .stroke-text { -webkit-text-stroke: 1px rgba(255,255,255,0.8); }
+        .cursor-none { cursor: none; }
       `}</style>
     </section>
   );
 }
 
-function MenuLink({ href, label, sub }: { href: string; label: string; sub: string }) {
+function MenuLink({ index, label, sub, isComplete }: { index: string, label: string; sub: string, isComplete: boolean }) {
   return (
-    <a href={href} className="group flex flex-col items-center md:items-inherit">
-      <span className="text-[8px] uppercase tracking-[0.3em] text-zinc-600 group-hover:text-indigo-400 transition-colors">
-        {sub}
-      </span>
-      <span className="text-4xl font-light tracking-tighter text-white/40 transition-all duration-500 group-hover:text-white group-hover:tracking-widest group-hover:italic">
-        {label}
+    <a href={`#${label.toLowerCase()}`} className="group flex flex-col items-center md:items-start relative">
+      <div className="flex items-baseline gap-4">
+        <span className="text-[10px] font-bold text-indigo-500/40 group-hover:text-indigo-400 transition-colors">{index}</span>
+        <span className="text-5xl md:text-6xl font-extralight tracking-tighter text-white transition-all duration-700 group-hover:tracking-[0.1em] group-hover:italic group-hover:opacity-100 opacity-20">
+          {label}
+        </span>
+      </div>
+      <span className={`text-[9px] uppercase tracking-[0.3em] mt-2 transition-colors duration-1000 ${isComplete ? 'text-zinc-500' : 'text-zinc-800'} group-hover:text-zinc-200`}>
+        // {sub}
       </span>
     </a>
   );
 }
 
-function TechLogo() {
+function TechLogo({ active }: { active: boolean }) {
   return (
-    <svg width="60" height="60" viewBox="0 0 100 100" className="opacity-80">
-      <rect x="20" y="20" width="60" height="60" fill="none" stroke="white" strokeWidth="0.5" strokeDasharray="4 4" />
-      <path d="M50 5 L50 25 M50 75 L50 95 M5 50 L25 50 M75 50 L95 50" stroke="white" strokeWidth="1" />
-      <circle cx="50" cy="50" r="8" fill="white" />
+    <svg width="100" height="100" viewBox="0 0 100 100" className={`transition-all duration-[2s] ${active ? 'opacity-100 rotate-0' : 'opacity-40 rotate-45'}`}>
+      <rect x="20" y="20" width="60" height="60" fill="none" stroke="white" strokeWidth="0.5" strokeDasharray="10 5" />
+      <path d="M50 0 L50 15 M50 85 L50 100 M0 50 L15 50 M85 50 L100 50" stroke="white" strokeWidth="1" />
+      <circle cx="50" cy="50" r="15" fill="none" stroke="white" strokeWidth="0.2" strokeDasharray="2 2" />
+      <circle cx="50" cy="50" r="5" fill="white" className={active ? 'animate-ping' : ''} />
     </svg>
   );
 }
