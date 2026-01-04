@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Zap, Cpu, BarChart3, ShieldCheck, Database, Globe } from "lucide-react";
+import { Zap, Cpu, BarChart3, ShieldCheck, Globe } from "lucide-react";
 
 /* ============ Types ============ */
 // Standardized IDs to match both logic and graphics
