@@ -1,8 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Zap, Cpu, BarChart3, ShieldCheck, Database, Globe } from "lucide-react";
 
-/* ============ About Section ============ */
+/* ============ Types ============ */
+// Standardized IDs to match both logic and graphics
+type CardId = "skills" | "metrics" | "pipeline";
+
+/* ============ Main About Component ============ */
 export function About() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
@@ -12,14 +17,18 @@ export function About() {
     const ctx = gsap.context(() => {
       const r = sectionRef.current!;
       const tl = gsap.timeline({
-        scrollTrigger: { trigger: r, start: "top 70%", once: true },
+        scrollTrigger: { 
+          trigger: r, 
+          start: "top 70%", 
+          once: true 
+        },
       });
 
-      tl.from(r.querySelector("[data-kicker]"), { y: 14, opacity: 0, duration: 0.45, ease: "power3.out" })
-        .from(r.querySelector("[data-title]"), { y: 18, opacity: 0, duration: 0.55, ease: "power3.out" }, "-=0.15")
-        .from(r.querySelectorAll("[data-body]"), { y: 14, opacity: 0, duration: 0.5, stagger: 0.06, ease: "power3.out" }, "-=0.25")
-        .from(r.querySelector("[data-deck]"), { x: 40, opacity: 0, duration: 0.8, ease: "power4.out" }, "-=0.4")
-        .from(r.querySelectorAll("[data-stat]"), { scale: 0.9, opacity: 0, duration: 0.45, stagger: 0.05, ease: "power3.out" }, "-=0.3");
+      tl.from(r.querySelector("[data-kicker]"), { x: -20, opacity: 0, duration: 0.6, ease: "power4.out" })
+        .from(r.querySelector("[data-title]"), { y: 30, opacity: 0, duration: 0.8, ease: "expo.out" }, "-=0.4")
+        .from(r.querySelectorAll("[data-body]"), { y: 20, opacity: 0, duration: 0.6, stagger: 0.1, ease: "power3.out" }, "-=0.5")
+        .from(r.querySelectorAll("[data-stat]"), { scale: 0.8, opacity: 0, duration: 0.5, stagger: 0.1, ease: "back.out(1.7)" }, "-=0.3")
+        .from(r.querySelector("[data-deck]"), { x: 60, opacity: 0, duration: 1, ease: "power4.out" }, "-=0.8");
 
       const counters = gsap.utils.toArray<HTMLElement>("[data-count-to]");
       counters.forEach((el) => {
@@ -27,9 +36,9 @@ export function About() {
         const obj = { val: 0 };
         gsap.to(obj, {
           val: to,
-          duration: 1.5,
-          ease: "power3.out",
-          scrollTrigger: { trigger: el, start: "top 90%", once: true },
+          duration: 2,
+          ease: "power4.out",
+          scrollTrigger: { trigger: el, start: "top 95%", once: true },
           onUpdate: () => { el.textContent = Math.round(obj.val).toString(); },
         });
       });
@@ -39,45 +48,48 @@ export function About() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen bg-[#020406] overflow-hidden flex items-center" id="about">
-      {/* Background Ambient Glow */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
-      
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-24 w-full flex-1">
-        <div className="grid gap-12 sm:gap-16 lg:grid-cols-12 lg:gap-12 lg:items-center w-full">
-          {/* Narrative */}
-          <div className="lg:col-span-6 w-full">
+    <section ref={sectionRef} className="relative min-h-screen bg-[#020406] overflow-hidden flex items-center py-24" id="about">
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-cyan-500/5 blur-[100px] rounded-full" />
+      </div>
+
+      <div className="container mx-auto max-w-6xl px-6 relative z-10">
+        <div className="grid gap-16 lg:grid-cols-12 items-center">
+          
+          <div className="lg:col-span-7 space-y-10">
             <div className="flex items-center gap-4" data-kicker>
-              <span className="px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-blue-400 border border-blue-500/20 bg-blue-500/5 rounded-full">
-                System.Profile
-              </span>
-              <div className="h-px flex-1 bg-gradient-to-r from-blue-500/20 to-transparent" />
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-blue-400">System.Status: Active</span>
+              </div>
+              <div className="h-px w-24 bg-gradient-to-r from-blue-500/30 to-transparent" />
             </div>
 
-            <h2 data-title className="mt-8 text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] w-full">
-              Engineering <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">scalable architectures</span> with high-fidelity design.
+            <h2 data-title className="text-4xl md:text-6xl font-bold tracking-tight text-white leading-[1.05]">
+              Engineering <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500">scalable digital</span> experiences.
             </h2>
 
-            <div className="mt-8 space-y-6 text-base sm:text-lg text-zinc-400 leading-relaxed w-full">
+            <div className="space-y-6 max-w-xl text-lg text-zinc-400 leading-relaxed">
               <p data-body>
-                I specialize in bridging the gap between complex <span className="text-white font-medium">Design Systems</span> and 
-                performant <span className="text-white font-medium">Full-stack integration</span>.
+                I am a <span className="text-white border-b border-blue-500/30 font-medium">Full-Stack Engineer</span> specialized in bridging the gap between design complexity and technical feasibility.
               </p>
-              <p data-body>
-                My philosophy centers on <span className="text-white font-medium">Maintainable Components</span> and 
-                optimized <span className="text-white font-medium">Core Web Vitals</span>.
+              <p data-body className="text-base">
+                Focused on <span className="text-zinc-200">React ecosystems</span>, <span className="text-zinc-200">Cloud Architecture</span>, and <span className="text-zinc-200">Interactive Motion</span>.
               </p>
             </div>
 
-            <div className="mt-12 grid grid-cols-3 gap-4 w-full">
-              <StatChip label="Years Exp" to={4} />
-              <StatChip label="Deployments" to={30} />
-              <StatChip label="Partners" to={12} />
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-4">
+              <StatChip label="Years Exp" to={4} icon={<Cpu size={14}/>} />
+              <StatChip label="Projects" to={32} icon={<Globe size={14}/>} />
+              <StatChip label="Clients" to={12} icon={<ShieldCheck size={14}/>} />
             </div>
           </div>
 
-          {/* Right: The Deck */}
-          <div className="lg:col-span-6 relative flex justify-center w-full" data-deck>
+          <div className="lg:col-span-5 relative flex justify-center w-full" data-deck>
             <IdentityDeck />
           </div>
         </div>
@@ -87,11 +99,9 @@ export function About() {
 }
 
 /* ============ Identity Deck ============ */
-type CardId = "skills" | "rings" | "flow";
-
 function IdentityDeck() {
   const deckRef = useRef<HTMLDivElement>(null);
-  const [order, setOrder] = useState<CardId[]>(["skills", "rings", "flow"]);
+  const [order, setOrder] = useState<CardId[]>(["skills", "metrics", "pipeline"]);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -110,7 +120,7 @@ function IdentityDeck() {
     <div
       ref={deckRef}
       onPointerMove={onPointerMove}
-      className="relative w-full max-w-[420px] h-[60vh] sm:h-[480px] perspective-[1200px] touch-none flex justify-center items-center"
+      className="relative w-full max-w-[420px] h-[480px] perspective-[1200px] touch-none flex justify-center items-center"
     >
       {order.map((id, index) => (
         <CardWrapper
@@ -128,7 +138,6 @@ function IdentityDeck() {
 function CardWrapper({ id, index, mousePos, onClick }: { id: CardId, index: number, mousePos: { x: number, y: number }, onClick: () => void }) {
   const isFront = index === 0;
   
-  // Transform logic: staggered stack effect
   const translateZ = -index * 40;
   const translateY = index * 10;
   const opacity = 1 - index * 0.15;
@@ -145,26 +154,23 @@ function CardWrapper({ id, index, mousePos, onClick }: { id: CardId, index: numb
         opacity,
       }}
     >
-      <div className="relative h-full w-full max-w-[420px] rounded-3xl border border-white/10 bg-[#0c0e12]/90 backdrop-blur-xl overflow-hidden shadow-2xl shadow-black">
-        {/* Dynamic Specular Highlight */}
+      <div className="relative h-full w-full rounded-3xl border border-white/10 bg-[#0c0e12]/90 backdrop-blur-xl overflow-hidden shadow-2xl shadow-black">
         <div 
           className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{
-            background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(255,255,255,0.08), transparent 50%)`
-          }}
+          style={{ background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(255,255,255,0.08), transparent 50%)` }}
         />
         
         <div className="p-6 h-full flex flex-col items-center justify-center">
           {id === "skills" && <SkillsGraphic mousePos={mousePos} />}
-          {id === "rings" && <RingsGraphic />}
-          {id === "flow" && <FlowGraphic />}
+          {id === "metrics" && <MetricsGraphic />}
+          {id === "pipeline" && <PipelineGraphic />}
         </div>
       </div>
     </div>
   );
 }
 
-/* ============ Refined Graphic Components ============ */
+/* ============ Graphic Components ============ */
 
 function SkillsGraphic({ mousePos }: { mousePos: { x: number, y: number } }) {
   return (
@@ -207,10 +213,14 @@ function SkillsGraphic({ mousePos }: { mousePos: { x: number, y: number } }) {
   );
 }
 
-function RingsGraphic() {
+
+function MetricsGraphic() {
   return (
     <div className="space-y-4 w-full px-4">
-      <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest text-center">Efficiency_Metrics</div>
+      <div className="flex items-center justify-center gap-2 mb-4">
+        <BarChart3 className="text-blue-400" size={18} />
+        <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest text-center">Efficiency_Metrics</div>
+      </div>
       <div className="flex flex-col gap-6">
         {[ {l: 'Speed', p: '98%', c: 'bg-blue-400'}, {l: 'SEO', p: '100%', c: 'bg-emerald-400'}, {l: 'A11y', p: '94%', c: 'bg-purple-400'} ].map((item, i) => (
           <div key={i} className="space-y-2">
@@ -225,11 +235,11 @@ function RingsGraphic() {
   );
 }
 
-function FlowGraphic() {
+function PipelineGraphic() {
   return (
     <div className="flex flex-col items-center gap-4">
        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
-         <ZapIcon />
+         <Zap className="text-white" fill="white" size={32} />
        </div>
        <div className="text-center">
          <div className="text-white font-bold">High Velocity</div>
@@ -239,15 +249,14 @@ function FlowGraphic() {
   );
 }
 
-function StatChip({ label, to }: { label: string; to: number }) {
+function StatChip({ label, to, icon }: { label: string; to: number; icon: React.ReactNode }) {
   return (
-    <div data-stat className="p-4 rounded-2xl bg-white/5 border border-white/10 text-center">
+    <div data-stat className="relative p-4 rounded-2xl bg-white/5 border border-white/10 text-center group">
+      <div className="absolute top-2 right-2 opacity-20 group-hover:opacity-100 transition-opacity text-blue-400">
+        {icon}
+      </div>
       <div className="text-2xl font-bold text-white"><span data-count-to={to}>0</span>+</div>
       <div className="text-[10px] uppercase tracking-wider text-zinc-500 mt-1">{label}</div>
     </div>
   );
 }
-
-const ZapIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-);
