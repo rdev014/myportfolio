@@ -168,10 +168,10 @@ export default function HeroSection() {
         
         {/* LEFT MENU (Strikes 1 & 2) */}
         <div className="flex flex-col gap-16 items-center md:items-start order-2 md:order-1 mt-10 md:mt-0">
-          <div ref={el => menuItemsRef.current[0] = el} className="opacity-0 translate-y-10">
+          <div ref={el => { menuItemsRef.current[0] = el; }} className="opacity-0 translate-y-10">
             <MenuLink index="01" label="PROJECTS" sub="Visual Code" />
           </div>
-          <div ref={el => menuItemsRef.current[1] = el} className="opacity-0 translate-y-10">
+          <div ref={el => { menuItemsRef.current[1] = el; }} className="opacity-0 translate-y-10">
             <MenuLink index="02" label="STACK" sub="Tech Core" />
           </div>
         </div>
@@ -189,10 +189,10 @@ export default function HeroSection() {
 
         {/* RIGHT MENU (Strikes 3 & 4) */}
         <div className="flex flex-col gap-16 items-center md:items-end order-3 mt-10 md:mt-0">
-          <div ref={el => menuItemsRef.current[2] = el} className="opacity-0 translate-y-10">
+          <div ref={el => { menuItemsRef.current[2] = el; }} className="opacity-0 translate-y-10">
             <MenuLink index="03" label="ABOUT" sub="The Logic" />
           </div>
-          <div ref={el => menuItemsRef.current[3] = el} className="opacity-0 translate-y-10">
+          <div ref={el => { menuItemsRef.current[3] = el; }} className="opacity-0 translate-y-10">
             <MenuLink index="04" label="SIGNAL" sub="Secure Line" />
           </div>
         </div>

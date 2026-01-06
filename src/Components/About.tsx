@@ -172,7 +172,7 @@ function CardWrapper({ id, index, mousePos, onClick }: { id: CardId, index: numb
 
 /* ============ Graphic Components ============ */
 
-function SkillsGraphic({ mousePos }: { mousePos: { x: number, y: number } }) {
+function SkillsGraphic({}: { mousePos: { x: number, y: number } }) {
   return (
     <div className="relative w-full aspect-square flex items-center justify-center">
       {/* Central Core */}
