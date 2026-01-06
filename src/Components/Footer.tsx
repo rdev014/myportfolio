@@ -1,93 +1,93 @@
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Linkedin, Twitter, ArrowUpRight } from "lucide-react";
 
 export default function Footer() {
   const socialLinks = [
-    { name: "LinkedIn", href: "https://www.linkedin.com/in/rahul-dev-516906225/", icon: <Linkedin className="w-6 h-6" /> },
-    { name: "Twitter", href: "https://x.com/rdev01431", icon: <Twitter className="w-6 h-6" /> },
-    { name: "GitHub", href: "https://github.com/rdev014", icon: <Github className="w-6 h-6" /> },
-    // { name: "Instagram", href: "https://instagram.com/yourprofile", icon: <Instagram className="w-6 h-6" /> },
+    { name: "LI", href: "https://www.linkedin.com/in/rahul-dev-516906225/", icon: <Linkedin size={18} /> },
+    { name: "TW", href: "https://x.com/rdev01431", icon: <Twitter size={18} /> },
+    { name: "GH", href: "https://github.com/rdev014", icon: <Github size={18} /> },
   ];
 
-  const quickLinks = [
-    { name: "About", href: "#about" },
-    { name: "Projects", href: "#projects" },
-    { name: "Tech Specs", href: "#tech" },
-    { name: "Contact", href: "#contact" },
-  ];
+  const quickLinks = ["About", "Projects", "Tech Specs", "Contact"];
 
   return (
-    <footer className="relative bg-black text-white pt-20">
-      {/* Subtle background lines */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/3 w-[1px] h-full bg-white/5 animate-pulse-slow"></div>
-        <div className="absolute top-0 right-1/4 w-[1px] h-full bg-white/5 animate-pulse-slower"></div>
+    <footer className="relative bg-[#020204] text-white pt-32 pb-10 overflow-hidden border-t border-white/5">
+      {/* BACKGROUND WATERMARK - Huge, subtle text for massive scale */}
+      <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 pointer-events-none select-none">
+        <h2 className="text-[18vw] font-black text-white/[0.02] leading-none tracking-tighter uppercase italic whitespace-nowrap px-12">
+          RAHUL DEV
+        </h2>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-10 z-10">
-        {/* Brand */}
-        <div className="space-y-4">
-          <h2 className="text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_0_15px_white]">
-            Rahul Dev
-          </h2>
-          <p className="text-gray-400 max-w-xs">
-            Crafting bold, modern, and high-impact web experiences.
-          </p>
-        </div>
-
-        {/* Quick Links */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold tracking-wide text-white">Quick Links</h3>
-          <ul className="space-y-2">
-            {quickLinks.map((link) => (
-              <li key={link.name}>
-                <a
-                  href={link.href}
-                  className="relative group text-white hover:text-cyan-400 transition-all duration-300 font-semibold"
-                >
-                  {link.name}
-                  <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-white group-hover:w-full transition-all duration-300"></span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Social Links */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold tracking-wide text-white">Follow Me</h3>
-          <div className="flex items-center gap-4">
-            {socialLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full bg-gray-900 transition-all duration-300 hover:scale-110 hover:shadow-[0_0_15px_white]"
-                aria-label={link.name}
+      <div className="relative max-w-7xl mx-auto px-6 z-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
+          
+          {/* LEFT: THE CALL TO ACTION */}
+          <div className="md:col-span-6 space-y-8">
+            <h3 className="text-5xl md:text-7xl font-light tracking-tighter leading-[0.9]">
+              HAVE A <span className="italic font-serif text-indigo-500">Vision?</span> <br />
+              LETS SYNC.
+            </h3>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <a 
+                href="mailto:your@email.com" 
+                className="group flex items-center justify-between px-8 py-5 bg-white text-black rounded-full font-bold transition-all hover:bg-indigo-500 hover:text-white"
               >
-                {link.icon}
+                START A PROJECT <ArrowUpRight className="ml-4 group-hover:rotate-45 transition-transform" />
               </a>
-            ))}
+              <div className="flex items-center gap-2 px-6 py-5 border border-white/10 rounded-full backdrop-blur-md">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-xs font-mono tracking-widest text-zinc-400">AVAILABILITY: Q1 2026</span>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: NAVIGATION & SOCIAL */}
+          <div className="md:col-span-5 md:col-start-8 grid grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h4 className="text-[10px] tracking-[0.3em] text-zinc-500 uppercase font-bold">Navigation</h4>
+              <ul className="space-y-4">
+                {quickLinks.map((link) => (
+                  <li key={link}>
+                    <a href={`#${link.toLowerCase().replace(" ", "")}`} className="text-sm font-medium text-zinc-400 hover:text-white transition-colors hover:underline underline-offset-8">
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="space-y-6">
+              <h4 className="text-[10px] tracking-[0.3em] text-zinc-500 uppercase font-bold">Social Signal</h4>
+              <div className="flex flex-col gap-4">
+                {socialLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    target="_blank"
+                    className="flex items-center gap-3 text-sm text-zinc-400 hover:text-indigo-400 transition-all group"
+                  >
+                    <span className="p-2 border border-white/5 rounded-lg group-hover:border-indigo-500/50 transition-colors">
+                      {link.icon}
+                    </span>
+                    <span className="font-mono">{link.name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Contact Me / Bold Call-to-Action */}
-        <div className="space-y-4 flex flex-col justify-between">
-          <h3 className="text-xl font-semibold tracking-wide text-white">Get in Touch</h3>
-          <p className="text-gray-400 max-w-xs">
-            Interested in collaborating? Let’s build something amazing together.
-          </p>
-          <a
-            href="#contact"
-            className="mt-4 inline-block px-6 py-3 text-white font-bold bg-cyan-500 rounded-lg hover:bg-cyan-600 shadow-lg transition-all duration-300 text-center"
-          >
-            Contact Me
-          </a>
+        {/* BOTTOM BAR */}
+        <div className="mt-32 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-mono tracking-widest text-zinc-600 uppercase">
+          <div className="flex items-center gap-8">
+            <span>Local Time: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} IST</span>
+            <span className="hidden sm:block">Status: Optimized for v4.0</span>
+          </div>
+          
+          <div className="text-zinc-600">
+            &copy; {new Date().getFullYear()} RAHUL_DEV / ALL_RIGHTS_RESERVED
+          </div>
         </div>
-      </div>
-
-      <div className="mt-16 border-t border-gray-700 pt-6 text-center text-gray-500 text-sm z-10 relative">
-        &copy; {new Date().getFullYear()} Rahul Dev. All rights reserved.
       </div>
     </footer>
   );
