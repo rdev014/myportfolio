@@ -53,7 +53,6 @@ export default function NexusTechOrbit() {
   const OrbitRing = ({ 
     items, 
     radius, 
-    speed, 
     direction,
     zOffset = 0 
   }: { 

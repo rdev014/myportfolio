@@ -10,7 +10,7 @@ type FormState = {
   message: string;
 };
 
-export function ContactSection() {
+export function Contact() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 

@@ -1,128 +1,152 @@
 import React, { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
 type Metric = { label: string; value: string };
-
 type Project = {
   title: string;
   url: string;
   image?: string;
-  preview?: string;
   tags: string[];
   summary?: string;
   year?: number;
-  repo?: string;
-  // New fields:
   metrics?: Metric[];
-  shots?: string[]; // small images shown after the techs row
+  shots?: string[];
 };
-
 const projects: Project[] = [
   {
     title: "Plexjar",
     url: "https://plexjar.com/",
-    tags: ["Next.js", "TypeScript", "Tailwind", "Front End Developer", "React Front End", "Front End Web Dev"],
-    summary: "Modern web experience with a focus on clarity and performance. Built as a front end developer emphasizing React front end techniques and front end web design.",
+    tags: ["Next.js", "TypeScript", "Tailwind"],
+    summary: "Modern web experience with a focus on clarity and performance.",
     year: 2024,
     metrics: [
-      { label: "Performance", value: "Lighthouse 98" },
-      { label: "Role", value: "Front‑end" },
+      { label: "Performance", value: "98 LH" },
+      { label: "Role", value: "Frontend" },
       { label: "Focus", value: "UX • Speed" },
     ],
-   
   },
   {
     title: "Akride",
     url: "https://akride.netlify.app/",
-    tags: ["React", "CSS", "SPA", "Front End Engineer", "JavaScript For Front End", "HTML Front End"],
-    summary: "Clean SPA showcasing content with speed and simplicity. Developed with front end engineering principles, including JavaScript for front end interactions and HTML front end structure.",
+    tags: ["React", "CSS", "SPA"],
+    summary: "Clean SPA showcasing content with speed and simplicity.",
     year: 2023,
-   
   },
   {
     title: "Arkin PHI",
     url: "https://arkin-phi.vercel.app/",
-    tags: ["Next.js", "GSAP", "UI/UX", "Front End Web Design", "Front End Designer", "Front End Website Development"],
-    summary: "Interactive landing with premium feel and purposeful motion. Designed as a front end designer focusing on front end web design and front end website development for seamless user experiences.",
+    tags: ["Next.js", "GSAP", "UI/UX"],
+    summary: "Interactive landing with premium feel and purposeful motion.",
     year: 2024,
     metrics: [
-      { label: "Motion", value: "Scroll scenes" },
-      { label: "UX", value: "Haptic + Delight" },
+      { label: "Motion", value: "Scroll" },
+      { label: "UX", value: "Premium" },
     ],
-    
   },
   {
     title: "Webspak",
     url: "https://webspak.vercel.app/",
-    tags: ["React", "Tailwind", "Animation", "Front End Dev", "React Front End Developer", "Front End Application"],
-    summary: "Product site with crisp design and smooth interactions. Crafted by a React front end developer specializing in front end dev and building robust front end applications.",
+    tags: ["React", "Tailwind", "Animation"],
+    summary: "Product site with crisp design and smooth interactions.",
     year: 2024,
     metrics: [
-      { label: "Stack", value: "React + TW" },
+      { label: "Stack", value: "React" },
       { label: "Ship", value: "2 weeks" },
     ],
   },
   {
     title: "WebMixStudio",
     url: "https://webmixstudio.com/",
-    tags: ["React", "CSS", "SPA", "Dev Frontend", "Front And End Developer", "End CSS"],
-    summary: "WebMixStudio combines Full-Stack Engineering (React, Node, AWS) with Psychological Design to help B2B & SaaS companies scale. Stop losing leads to slow load times and confusing UI",
+    tags: ["React", "Node", "AWS"],
+    summary: "Full-Stack Engineering with Psychological Design for B2B & SaaS.",
     year: 2025,
-    
   },
 ];
-
 const screenshot = (url: string, w = 1200) =>
   `https://image.thum.io/get/width/${w}/${encodeURIComponent(url)}`;
-
-export function ProjectsSection() {
+export default function ProjectsSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<HTMLDivElement[]>([]);
-  const prefersReduced = useRef(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [active, setActive] = useState(0);
-
-  // site modal
   const [modal, setModal] = useState<{ url: string; title: string } | null>(null);
-  // image lightbox
   const [lightbox, setLightbox] = useState<{ src: string; title?: string } | null>(null);
-
+  // Particle background
   useEffect(() => {
-    prefersReduced.current = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-  }, []);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+   
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    const ctx = gsap.context(() => {
-      const r = sectionRef.current!;
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: r, start: "top 70%", once: true },
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const particles: Array<{x: number, y: number, vx: number, vy: number, life: number}> = [];
+   
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        life: Math.random()
       });
-      tl.from(r.querySelector("[data-kicker]"), { y: 14, opacity: 0, duration: 0.6, ease: "back.out(1.7)" })
-        .from(r.querySelector("[data-title]"), { y: 18, opacity: 0, duration: 0.7, ease: "back.out(1.7)" }, "-=0.3")
-        .from(r.querySelectorAll("[data-sub]"), { y: 12, opacity: 0, duration: 0.6, ease: "back.out(1.7)", stagger: 0.08 }, "-=0.3")
-        .from(".proj-item", { y: 26, opacity: 0, scale: 0.98, duration: 0.7, ease: "back.out(1.7)", stagger: 0.08 }, "-=0.2");
-    }, sectionRef);
-    return () => ctx.revert();
-  }, []);
+    }
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+     
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+       
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+       
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(57, 255, 20, ${p.life * 0.3})`;
+        ctx.fill();
+       
+        particles.forEach(other => {
+          const dx = other.x - p.x;
+          const dy = other.y - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+         
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(other.x, other.y);
+            ctx.strokeStyle = `rgba(57, 255, 20, ${(1 - dist / 120) * 0.1})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        });
+      });
+     
+      requestAnimationFrame(animate);
+    };
+   
+    animate();
 
-  // center helper
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
   const centerTo = (i: number) => {
-    const track = trackRef.current!;
+    const track = trackRef.current;
     const el = itemRefs.current[i];
     if (!track || !el) return;
     const left = el.offsetLeft - (track.clientWidth - el.clientWidth) / 2;
-    if (prefersReduced.current) {
-      track.scrollTo({ left, behavior: "smooth" });
-    } else {
-      gsap.to(track, { scrollLeft: left, duration: 0.8, ease: "power2.out" });
-    }
+    track.scrollTo({ left, behavior: "smooth" });
   };
-
-  // coverflow transforms + active detection
+  // Coverflow effect
   useEffect(() => {
-    const track = trackRef.current!;
+    const track = trackRef.current;
     if (!track) return;
     const apply = () => {
       const center = track.scrollLeft + track.clientWidth / 2;
@@ -137,11 +161,11 @@ export function ProjectsSection() {
           nearest = i;
         }
         const ratio = Math.min(1, abs / (track.clientWidth * 0.7));
-        const scale = 1 - ratio * 0.06; // Reduced scale drop for smoother feel
-        const ry = (d / track.clientWidth) * 10; // Softer rotation
+        const scale = 1 - ratio * 0.08;
+        const ry = (d / track.clientWidth) * 12;
         el.style.setProperty("--cf-scale", String(scale));
         el.style.setProperty("--cf-ry", `${ry}deg`);
-        el.style.setProperty("--cf-opacity", String(1 - ratio * 0.2)); // Gentler opacity fade
+        el.style.setProperty("--cf-opacity", String(1 - ratio * 0.3));
       });
       setActive(nearest);
     };
@@ -154,169 +178,120 @@ export function ProjectsSection() {
       ro.disconnect();
     };
   }, []);
-
-  // drag swipe + momentum + snap
+  // Drag to scroll
   useEffect(() => {
-    const track = trackRef.current!;
+    const track = trackRef.current;
     if (!track) return;
-
     let isDown = false;
     let startX = 0;
     let startScroll = 0;
-    let lastX = 0;
-    let lastT = 0;
-    let velocity = 0; // px/ms
-
     const onPointerDown = (e: PointerEvent) => {
       isDown = true;
       track.classList.add("dragging");
-      track.setPointerCapture?.(e.pointerId);
       startX = e.clientX;
       startScroll = track.scrollLeft;
-      lastX = e.clientX;
-      lastT = performance.now();
-      // Soften start by killing any ongoing animation
-      gsap.killTweensOf(track);
     };
-
     const onPointerMove = (e: PointerEvent) => {
       if (!isDown) return;
       e.preventDefault();
       const dx = e.clientX - startX;
       track.scrollLeft = startScroll - dx;
-      const now = performance.now();
-      const dt = now - lastT || 1;
-      velocity = (e.clientX - lastX) / dt; // px per ms
-      lastX = e.clientX;
-      lastT = now;
     };
-
-    const findNearestIndex = () => {
-      const center = track.scrollLeft + track.clientWidth / 2;
-      let nearest = 0;
-      let min = Infinity;
-      itemRefs.current.forEach((el, i) => {
-        const c = el.offsetLeft + el.clientWidth / 2;
-        const d = Math.abs(c - center);
-        if (d < min) {
-          min = d;
-          nearest = i;
-        }
-      });
-      return nearest;
-    };
-
-    const snap = (flickDir = 0) => {
-      let nearest = findNearestIndex();
-      if (flickDir !== 0) {
-        nearest = Math.max(0, Math.min(projects.length - 1, nearest + flickDir));
-      }
-      centerTo(nearest);
-    };
-
-    const onPointerUp = (e: PointerEvent) => {
-      if (!isDown) return;
+    const onPointerUp = () => {
       isDown = false;
       track.classList.remove("dragging");
-
-      // decide by velocity and drag distance
-      const v = velocity; // px/ms
-      const flickThreshold = 0.5; // Lowered for easier flicking
-      const dx = e.clientX - startX;
-      const card = itemRefs.current[active];
-      const distanceThreshold = (card?.clientWidth || 600) * 0.15; // Reduced threshold for easier snaps
-
-      if (Math.abs(v) > flickThreshold) {
-        // negative v = moved left -> go to next
-        snap(v < 0 ? +1 : -1);
-      } else if (Math.abs(dx) > distanceThreshold) {
-        snap(dx < 0 ? +1 : -1);
-      } else {
-        snap(0);
-      }
     };
-
- const onLeaveOrCancel = (_e: PointerEvent) => {
-  if (!isDown) return;
-  isDown = false;
-  track.classList.remove("dragging");
-  snap(0);
-};
-
-
-    track.addEventListener("pointerdown", onPointerDown, { passive: true });
-    track.addEventListener("pointermove", onPointerMove, { passive: false });
-    track.addEventListener("pointerup", onPointerUp, { passive: true });
-    track.addEventListener("pointercancel", onLeaveOrCancel, { passive: true });
-    track.addEventListener("pointerleave", onLeaveOrCancel, { passive: true });
-
+    track.addEventListener("pointerdown", onPointerDown);
+    track.addEventListener("pointermove", onPointerMove);
+    track.addEventListener("pointerup", onPointerUp);
+    track.addEventListener("pointerleave", onPointerUp);
     return () => {
       track.removeEventListener("pointerdown", onPointerDown);
       track.removeEventListener("pointermove", onPointerMove);
       track.removeEventListener("pointerup", onPointerUp);
-      track.removeEventListener("pointercancel", onLeaveOrCancel);
-      track.removeEventListener("pointerleave", onLeaveOrCancel);
+      track.removeEventListener("pointerleave", onPointerUp);
     };
-  }, [active]);
-
-  // keyboard nav
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") centerTo(Math.max(0, active - 1));
-      if (e.key === "ArrowRight") centerTo(Math.min(projects.length - 1, active + 1));
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [active]);
-
+  }, []);
   const prev = () => centerTo(Math.max(0, active - 1));
   const next = () => centerTo(Math.min(projects.length - 1, active + 1));
-
   return (
-    <section ref={sectionRef} className="relative overflow-hidden" aria-labelledby="projects-title">
-      {/* Animated background layer */}
-      <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#06060a] via-[#0b0d12] to-[#0d0f14] animate-bg-shift opacity-80" />
-        <div className="absolute -left-24 -top-20 w-[800px] h-[800px] rounded-full bg-gradient-to-r from-[#6b21a8] to-[#ff7ab6] opacity-10 blur-3xl animate-slow-spin" />
-        <div className="absolute right-10 bottom-10 w-[500px] h-[500px] rounded-full bg-gradient-to-r from-[#1e3a8a] to-[#06b6d4] opacity-8 blur-2xl animate-slow-spin-rev" />
+    <section ref={sectionRef} className="relative overflow-hidden bg-[#050810] min-h-screen py-24">
+      {/* Particle Canvas */}
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
+      {/* Animated Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050810] via-[#0a1020] to-[#050810]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-lime-600/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-lime-500/10 rounded-full blur-[100px]" />
+       
+        {/* Grid */}
+        <div className="absolute inset-0 opacity-5" style={{
+          backgroundImage: `
+            linear-gradient(rgba(57, 255, 20, 0.3) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(57, 255, 20, 0.3) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px'
+        }} />
       </div>
-
-      <div className="mx-auto max-w-6xl px-6 py-24">
-        <header className="mb-8 flex items-center justify-between gap-6">
-          <div>
-            <span data-kicker className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/3 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300 backdrop-blur-sm">
-              Projects
-            </span>
-            <h2 id="projects-title" data-title className="mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
-              Selected work
-            </h2>
-            <p data-sub className="mt-2 max-w-2xl text-zinc-400">
-              Drag to swipe through immersive previews. Each card shows stack and extras below.
-            </p>
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
+        {/* Header */}
+        <header className="mb-16 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-lime-500/30 bg-lime-500/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-lime-300 backdrop-blur-sm mb-6">
+            <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
+            Project Archives
           </div>
-
-          <div className="hidden lg:flex items-center gap-3">
+         
+          <h2 className="text-6xl md:text-8xl font-black tracking-tight mb-6">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 via-lime-400 to-green-500">
+              Featured Work
+            </span>
+          </h2>
+         
+          <p className="text-lg text-lime-200/70 max-w-2xl mx-auto mb-8">
+            Drag or swipe to explore immersive project previews
+          </p>
+          {/* Navigation Controls */}
+          <div className="flex items-center justify-center gap-4">
             <button
-              aria-label="Previous"
               onClick={prev}
-              className="group flex items-center justify-center h-10 w-10 rounded-lg border border-white/8 bg-[#0f1319]/80 p-2 text-zinc-300 ring-1 ring-white/6 transition-all duration-300 ease-out hover:scale-110 active:scale-95"
+              disabled={active === 0}
+              className="group relative flex items-center justify-center w-12 h-12 rounded-xl border border-lime-500/40 bg-lime-500/10 text-lime-300 transition-all hover:bg-lime-500/20 hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              ‹
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <div className="absolute inset-0 rounded-xl bg-lime-500/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
             </button>
+            {/* Progress indicator */}
+            <div className="flex items-center gap-2">
+              {projects.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => centerTo(i)}
+                  className={`h-2 rounded-full transition-all ${
+                    i === active
+                      ? 'w-8 bg-gradient-to-r from-lime-400 to-green-500 shadow-[0_0_20px_rgba(57,255,20,0.6)]'
+                      : 'w-2 bg-lime-500/30 hover:bg-lime-500/50'
+                  }`}
+                />
+              ))}
+            </div>
             <button
-              aria-label="Next"
               onClick={next}
-              className="group flex items-center justify-center h-10 w-10 rounded-lg border border-white/8 bg-[#0f1319]/80 p-2 text-zinc-300 ring-1 ring-white/6 transition-all duration-300 ease-out hover:scale-110 active:scale-95"
+              disabled={active === projects.length - 1}
+              className="group relative flex items-center justify-center w-12 h-12 rounded-xl border border-lime-500/40 bg-lime-500/10 text-lime-300 transition-all hover:bg-lime-500/20 hover:scale-110 disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              ›
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              <div className="absolute inset-0 rounded-xl bg-lime-500/20 opacity-0 group-hover:opacity-100 transition-opacity blur-xl" />
             </button>
           </div>
         </header>
-
         {/* Carousel */}
         <div
           ref={trackRef}
-          className="no-scrollbar relative -mx-2 flex snap-x snap-mandatory gap-6 overflow-x-auto px-2 pb-8 pt-2 select-none"
+          className="no-scrollbar relative flex snap-x snap-mandatory gap-8 overflow-x-auto pb-12 pt-4 select-none"
           style={{ touchAction: "pan-y", cursor: "grab" }}
         >
           {projects.map((p, i) => (
@@ -325,11 +300,11 @@ export function ProjectsSection() {
               ref={(el) => {
                 if (el) itemRefs.current[i] = el;
               }}
-              className="proj-item group relative h-full w-[85vw] shrink-0 snap-center sm:w-[70vw] md:w-[60vw] lg:w-[48rem]"
+              className="shrink-0 snap-center w-[90vw] xs:w-[85vw] sm:w-[75vw] md:w-[65vw] lg:w-[55vw] xl:w-[50rem]"
               style={{
-                transform: "perspective(1200px) rotateY(var(--cf-ry,0)) scale(var(--cf-scale,1))",
+                transform: "perspective(1500px) rotateY(var(--cf-ry,0)) scale(var(--cf-scale,1))",
                 opacity: "var(--cf-opacity,1)",
-                transition: "transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94)", // Smoother cubic-bezier
+                transition: "transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 400ms",
                 willChange: "transform, opacity",
               }}
             >
@@ -342,48 +317,39 @@ export function ProjectsSection() {
             </div>
           ))}
         </div>
-
-        {/* Progress bar */}
-        <div className="mt-6 flex items-center justify-center gap-3">
-          <div className="w-[260px] h-1 rounded-full bg-white/6 overflow-hidden">
-            <div
-              aria-hidden
-              style={{ width: `${((active + 1) / projects.length) * 100}%` }}
-              className="h-full bg-gradient-to-r from-violet-400 to-pink-400 transition-all duration-500 ease-out" // Smoother progress
-            />
-          </div>
-        </div>
       </div>
-
       {/* Live site modal */}
       {modal && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4">
-          <div className="relative w-full max-w-6xl overflow-hidden rounded-2xl border border-white/8 bg-[#0d1014] ring-1 ring-white/6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/8 p-3">
-              <div className="flex items-center gap-3">
-                <div className="text-sm font-medium text-white">{modal.title}</div>
-                <div className="text-xs text-zinc-400">{modal.url.replace(/^https?:\/\//, "")}</div>
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setModal(null)}>
+          <div className="relative w-full max-w-6xl overflow-hidden rounded-3xl border border-lime-500/30 bg-slate-900/95 shadow-[0_0_60px_rgba(57,255,20,0.3)]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-lime-500/20 bg-slate-950/60 p-4">
+              <div className="flex items-center gap-4">
+                <div className="flex gap-2">
+                  <span className="h-3 w-3 rounded-full bg-red-400/80 shadow-[0_0_10px_rgba(248,113,113,0.5)]" />
+                  <span className="h-3 w-3 rounded-full bg-amber-300/80 shadow-[0_0_10px_rgba(252,211,77,0.5)]" />
+                  <span className="h-3 w-3 rounded-full bg-emerald-400/80 shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+                </div>
+                <span className="text-sm font-semibold text-white">{modal.title}</span>
+                <span className="text-xs text-lime-400 font-mono">{modal.url.replace(/^https?:\/\//, "")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <a
                   href={modal.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-lg border border-white/8 bg-white/6 px-3 py-1.5 text-xs text-white ring-1 ring-white/6 transition-all duration-200 ease-out hover:scale-105"
+                  className="rounded-lg border border-lime-500/40 bg-lime-500/10 px-4 py-2 text-xs font-semibold text-lime-300 hover:bg-lime-500/20 transition-all"
                 >
-                  Open ↗
+                  Open Live ↗
                 </a>
                 <button
                   onClick={() => setModal(null)}
-                  className="rounded-lg border border-white/8 bg-[#11151b] p-2 text-zinc-300 ring-1 ring-white/6 hover:text-white transition-colors duration-200"
-                  aria-label="Close"
+                  className="rounded-lg border border-white/20 bg-slate-800 p-2 text-white hover:bg-slate-700 transition-colors"
                 >
                   ✕
                 </button>
               </div>
             </div>
-
-            <div className="aspect-[16/9] w-full">
+            <div className="aspect-[16/9] w-full bg-black">
               <iframe
                 src={modal.url}
                 title={modal.title}
@@ -395,52 +361,33 @@ export function ProjectsSection() {
           </div>
         </div>
       )}
-
       {/* Image lightbox */}
       {lightbox && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4" onClick={() => setLightbox(null)}>
-          <div className="relative max-h-[85vh] w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-[#0d1014] ring-1 ring-white/10">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setLightbox(null)}>
+          <div className="relative max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-2xl border border-lime-500/30 shadow-[0_0_60px_rgba(57,255,20,0.3)]">
             <button
               onClick={() => setLightbox(null)}
-              className="absolute right-3 top-3 z-10 rounded-md bg-black/40 px-2 py-1 text-sm text-white ring-1 ring-white/10 transition-all duration-200 hover:bg-black/60"
+              className="absolute right-4 top-4 z-10 rounded-lg bg-black/60 backdrop-blur-sm px-3 py-2 text-sm text-white border border-white/20 hover:bg-black/80 transition-all"
             >
               Close
             </button>
             <img
               src={lightbox.src}
               alt={lightbox.title || "Preview"}
-              className="block max-h-[85vh] w-full object-contain"
+              className="block max-h-[90vh] w-full object-contain"
             />
           </div>
         </div>
       )}
-
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .dragging { cursor: grabbing !important; }
         .dragging iframe, .dragging a { pointer-events: none !important; }
-
-        /* Animated background helpers */
-        @keyframes bgShift {
-          0% { transform: translateY(0px) scale(1); opacity: 0.8 }
-          50% { transform: translateY(-30px) scale(1.02); opacity: 0.9 }
-          100% { transform: translateY(0px) scale(1); opacity: 0.8 }
-        }
-        .animate-bg-shift { animation: bgShift 20s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; } /* Smoother animation timing */
-
-        @keyframes slowSpin {
-          0% { transform: rotate(0deg) translateZ(0); }
-          100% { transform: rotate(360deg) translateZ(0); }
-        }
-        .animate-slow-spin { animation: slowSpin 70s linear infinite; } /* Slower for ease */
-        .animate-slow-spin-rev { animation: slowSpin 90s linear infinite reverse; }
       `}</style>
     </section>
   );
 }
-
-/* ================= ProjectCard (with extras after techs) ================= */
 function ProjectCard({
   project,
   onQuickPreview,
@@ -456,8 +403,6 @@ function ProjectCard({
   const [inView, setInView] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
-
-  // lazy load iframe when visible
   useEffect(() => {
     const el = cardRef.current;
     if (!el) return;
@@ -473,21 +418,20 @@ function ProjectCard({
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-
-  // pointer tilt handler
   const onMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
     const el = cardRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const y = (e.clientY - r.top) / r.height;
-    const rx = (0.5 - y) * 6; // Reduced tilt for subtler, smoother motion
-    const ry = (x - 0.5) * 9; // Softer rotation
+    const rx = (0.5 - y) * 5;
+    const ry = (x - 0.5) * 8;
     el.style.setProperty("--rx", `${rx}deg`);
     el.style.setProperty("--ry", `${ry}deg`);
     el.style.setProperty("--mx", `${(x * 100).toFixed(2)}%`);
     el.style.setProperty("--my", `${(y * 100).toFixed(2)}%`);
   };
+ 
   const onLeave = () => {
     const el = cardRef.current;
     if (!el) return;
@@ -496,176 +440,179 @@ function ProjectCard({
     el.style.setProperty("--mx", `50%`);
     el.style.setProperty("--my", `50%`);
   };
-
   const coverHi = project.image || screenshot(project.url, 1280);
   const coverLow = project.image || screenshot(project.url, 360);
-
-  const accentGradient = [
-    "from-violet-400 to-pink-400",
-    "from-emerald-300 to-sky-400",
-    "from-yellow-400 to-orange-400",
-    "from-indigo-400 to-cyan-300",
+  const accentColors = [
+    { border: 'border-purple-500/40', glow: 'shadow-[0_0_40px_rgba(168,85,247,0.4)]', bg: 'from-purple-500/20' },
+    { border: 'border-lime-500/40', glow: 'shadow-[0_0_40px_rgba(57,255,20,0.4)]', bg: 'from-lime-500/20' },
+    { border: 'border-pink-500/40', glow: 'shadow-[0_0_40px_rgba(236,72,153,0.4)]', bg: 'from-pink-500/20' },
+    { border: 'border-green-500/40', glow: 'shadow-[0_0_40px_rgba(34,197,94,0.4)]', bg: 'from-green-500/20' },
   ][(accentIndex ?? 0) % 4];
-
   return (
     <article
       ref={cardRef}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
-      className="group relative isolate overflow-hidden rounded-2xl border border-white/6 bg-gradient-to-br from-[#0c0f12] to-[#0f1319] backdrop-blur-sm shadow-[0_8px_30px_rgba(2,6,23,0.6)]"
+      className="group relative isolate overflow-hidden rounded-3xl"
       style={{
         transformStyle: "preserve-3d",
         transform: "rotateX(var(--rx,0)) rotateY(var(--ry,0))",
-        transition: "transform 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94)", // Smoother tilt transition
+        transition: "transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
       }}
-      aria-label={`${project.title} project card`}
     >
-      {/* browser chrome mock */}
-      <div className="flex items-center gap-2 px-3 py-2 bg-black/20 border-b border-white/4">
-        <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
-        <div className="ml-3 text-xs text-zinc-400 truncate">
-          {project.url.replace(/^https?:\/\//, "")}
+      {/* Glowing border */}
+      <div className={`absolute -inset-[1px] ${accentColors.border} ${accentColors.glow} rounded-3xl blur-sm`} />
+      <div className={`absolute -inset-[2px] bg-gradient-to-br ${accentColors.bg} to-transparent rounded-3xl opacity-40 animate-pulse`} />
+     
+      {/* Main card */}
+      <div className={`relative bg-slate-900/95 backdrop-blur-xl rounded-3xl border ${accentColors.border} overflow-hidden`}>
+        {/* Scan line */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-lime-400/10 to-transparent animate-scan" />
         </div>
-        <div className="ml-auto hidden sm:inline-flex items-center gap-2">
-          {project.year && (
-            <div className="rounded-full bg-white/6 px-2 py-0.5 text-[11px] text-zinc-300">
-              {project.year}
-            </div>
-          )}
-          <div className={`h-1 w-16 rounded-full bg-gradient-to-r ${accentGradient} opacity-30`} />
-        </div>
-      </div>
-
-      {/* preview area */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden">
-        {/* LQIP */}
-        <img src={coverLow} alt="" className="absolute inset-0 h-full w-full object-cover blur-sm scale-105" aria-hidden />
-        {/* hi-res crossfade */}
-        <img
-          src={coverHi}
-          alt={`${project.title} preview`}
-          className="absolute inset-0 h-full w-full object-cover transition-all duration-700 ease-out" // Smoother image load
-          style={{ opacity: imgLoaded ? 1 : 0, transform: "translateZ(14px) scale(1.01)" }}
-          loading="lazy"
-          decoding="async"
-          onLoad={() => setImgLoaded(true)}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-        />
-
-        {/* iframe (lazy load when in view) */}
-        {inView && (
-          <iframe
-            src={project.url}
-            title={`${project.title} live preview`}
-            className="absolute inset-0 h-full w-full rounded-b-none transition-all duration-800 ease-out" // Smoother iframe fade
-            style={{ opacity: iframeLoaded ? 1 : 0, backdropFilter: "blur(0px)" }}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups"
-            loading="lazy"
-            onLoad={() => setIframeLoaded(true)}
-          />
-        )}
-
-        {/* glare */}
+        {/* Glare effect */}
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-400 group-hover:opacity-100"
+          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
           style={{
-            background: "radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.06), transparent 60%)",
+            background: "radial-gradient(300px circle at var(--mx,50%) var(--my,50%), rgba(57,255,20,0.15), transparent 70%)",
             mixBlendMode: "screen",
           }}
         />
-
-        {/* live badge */}
-        <div className="absolute left-3 top-3 flex items-center gap-2">
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-300 ring-1 ring-emerald-400/20">LIVE</span>
-        </div>
-
-        {/* subtle bottom vignette */}
-        <div aria-hidden className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/30 to-transparent" />
-      </div>
-
-      {/* content */}
-      <div className="flex flex-col gap-3 p-4" style={{ transform: "translateZ(12px)" }}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-base font-semibold tracking-tight text-white">{project.title}</h3>
-            {project.summary && <p className="mt-1 text-sm text-zinc-400 line-clamp-2">{project.summary}</p>}
-          </div>
-
-        <div className="flex items-center gap-2">
-            <button
-              onClick={onQuickPreview}
-              className="rounded-lg border border-white/8 bg-[#0e1116] px-2 py-1.5 text-xs text-zinc-300 ring-1 ring-white/6 transition-all duration-200 ease-out hover:scale-[1.05]"
-            >
-              Expand
-            </button>
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-white/8 bg-white/6 px-3 py-1.5 text-xs font-medium text-white ring-1 ring-white/6 transition-all duration-200 ease-out hover:translate-x-0.5 hover:scale-105"
-            >
-              Visit →
-            </a>
-          </div>
-        </div>
-
-        {/* Tech tags */}
-        <div className="flex flex-wrap items-center gap-2">
-          {project.tags.map((t) => (
-            <span
-              key={t}
-              className="rounded-full bg-white/3 px-2 py-1 text-[11px] font-medium text-zinc-300 ring-1 ring-white/4 transition-all duration-200 hover:bg-white/5"
-            >
-              {t}
+        {/* Browser chrome */}
+        <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-950/60 border-b border-lime-500/20">
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2">
+              <span className="h-3 w-3 rounded-full bg-red-400/80 shadow-[0_0_10px_rgba(248,113,113,0.5)]" />
+              <span className="h-3 w-3 rounded-full bg-amber-300/80 shadow-[0_0_10px_rgba(252,211,77,0.5)]" />
+              <span className="h-3 w-3 rounded-full bg-emerald-400/80 shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+            </div>
+            <span className="text-xs text-lime-400/70 font-mono truncate max-w-[200px]">
+              {project.url.replace(/^https?:\/\//, "")}
             </span>
-          ))}
+          </div>
+          {project.year && (
+            <div className="px-3 py-1 rounded-full bg-lime-500/10 border border-lime-500/30 text-xs text-lime-300 font-semibold">
+              {project.year}
+            </div>
+          )}
         </div>
-
-        {/* Extras: metrics and/or small gallery */}
-        {(project.metrics?.length || project.shots?.length) ? (
-          <div className="mt-2 space-y-3">
-            {/* Metrics chips */}
-            {project.metrics?.length ? (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {project.metrics.map((m, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-zinc-300 ring-1 ring-white/10 transition-all duration-200 hover:bg-white/[0.08]"
-                    style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
-                  >
-                    <div className="text-[10px] uppercase tracking-wide text-white/70">{m.label}</div>
-                    <div className="mt-0.5 font-medium text-white">{m.value}</div>
+        {/* Preview area */}
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
+          {/* LQIP */}
+          <img src={coverLow} alt="" className="absolute inset-0 h-full w-full object-cover blur-lg scale-110" />
+         
+          {/* Hi-res image */}
+          <img
+            src={coverHi}
+            alt={`${project.title} preview`}
+            className="absolute inset-0 h-full w-full object-cover transition-all duration-700"
+            style={{ opacity: imgLoaded ? 1 : 0 }}
+            loading="lazy"
+            onLoad={() => setImgLoaded(true)}
+          />
+          {/* Live iframe */}
+          {inView && (
+            <iframe
+              src={project.url}
+              title={`${project.title} live preview`}
+              className="absolute inset-0 h-full w-full transition-opacity duration-800"
+              style={{ opacity: iframeLoaded ? 1 : 0 }}
+              sandbox="allow-scripts allow-same-origin allow-forms"
+              loading="lazy"
+              onLoad={() => setIframeLoaded(true)}
+            />
+          )}
+          {/* Status badge */}
+          <div className="absolute left-4 top-4 flex items-center gap-2">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 backdrop-blur-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+              <span className="text-xs text-emerald-300 font-semibold">LIVE</span>
+            </div>
+          </div>
+          {/* Bottom vignette */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/60 to-transparent" />
+        </div>
+        {/* Content */}
+        <div className="p-6 space-y-4">
+          {/* Title and actions */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
+              {project.summary && (
+                <p className="text-sm text-lime-200/70 line-clamp-2">{project.summary}</p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={onQuickPreview}
+                className="rounded-lg border border-lime-500/40 bg-lime-500/10 px-3 py-2 text-xs font-semibold text-lime-300 hover:bg-lime-500/20 transition-all"
+              >
+                Expand
+              </button>
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-lime-500/40 bg-lime-500/20 px-4 py-2 text-xs font-bold text-white hover:bg-lime-500/30 hover:scale-105 transition-all shadow-[0_0_20px_rgba(57,255,20,0.3)]"
+              >
+                Visit →
+              </a>
+            </div>
+          </div>
+          {/* Tech tags */}
+          <div className="flex flex-wrap gap-2">
+            {project.tags.map((tag) => (
+              <span
+                key={tag}
+                className="px-3 py-1 rounded-full bg-slate-800/50 border border-lime-500/20 text-xs text-lime-300 font-medium hover:bg-slate-800/80 hover:border-lime-500/40 transition-all"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          {/* Metrics */}
+          {project.metrics && project.metrics.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {project.metrics.map((m, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-lime-500/20 bg-lime-500/5 p-3 backdrop-blur-sm hover:bg-lime-500/10 hover:border-lime-500/40 transition-all"
+                >
+                  <div className="text-[10px] uppercase tracking-widest text-lime-400/60 font-semibold mb-1">
+                    {m.label}
                   </div>
-                ))}
-              </div>
-            ) : null}
-
-            {/* Image gallery thumbs */}
-            {project.shots?.length ? (
-              <div className="no-scrollbar flex gap-2 overflow-x-auto">
-                {project.shots.map((src, i) => (
+                  <div className="text-sm font-bold text-white">
+                    {m.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Gallery shots */}
+          {project.shots && project.shots.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-lime-300 uppercase tracking-wide">Gallery</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {project.shots.map((shot, j) => (
                   <button
-                    key={i}
-                    onClick={() => onShowImage(src)}
-                    className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg border border-white/10 ring-1 ring-white/10 transition-all duration-200 hover:scale-105 hover:border-white/20"
-                    title="Open image"
+                    key={j}
+                    onClick={() => onShowImage(shot)}
+                    className="relative aspect-[16/9] overflow-hidden rounded-xl border border-lime-500/20 hover:border-lime-500/40 transition-all group"
                   >
-                    <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    <img
+                      src={shot}
+                      alt={`Shot ${j + 1} of ${project.title}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   </button>
                 ))}
               </div>
-            ) : null}
-          </div>
-        ) : null}
+            </div>
+          )}
+        </div>
       </div>
-
-      <style>{`article { will-change: transform; }`}</style>
     </article>
   );
 }
-
-export default ProjectsSection;
