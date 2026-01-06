@@ -169,10 +169,10 @@ export default function HeroSection() {
         {/* LEFT MENU (Strikes 1 & 2) */}
         <div className="flex flex-col gap-16 items-center md:items-start order-2 md:order-1 mt-10 md:mt-0">
           <div ref={el => menuItemsRef.current[0] = el} className="opacity-0 translate-y-10">
-            <MenuLink index="01" label="PROJECTS" sub="Visual Code" />
+            <MenuLinK to="/projects" index="01" label="PROJECTS" sub="Visual Code" />
           </div>
           <div ref={el => menuItemsRef.current[1] = el} className="opacity-0 translate-y-10">
-            <MenuLink index="02" label="STACK" sub="Tech Core" />
+            <MenuLink to="/stack" index="02" label="STACK" sub="Tech Core" />
           </div>
         </div>
 
@@ -190,10 +190,10 @@ export default function HeroSection() {
         {/* RIGHT MENU (Strikes 3 & 4) */}
         <div className="flex flex-col gap-16 items-center md:items-end order-3 mt-10 md:mt-0">
           <div ref={el => menuItemsRef.current[2] = el} className="opacity-0 translate-y-10">
-            <MenuLink index="03" label="ABOUT" sub="The Logic" />
+            <MenuLink to="/about" index="03" label="ABOUT" sub="The Logic" />
           </div>
           <div ref={el => menuItemsRef.current[3] = el} className="opacity-0 translate-y-10">
-            <MenuLink index="04" label="SIGNAL" sub="Secure Line" />
+            <MenuLink to="/signal" index="04" label="SIGNAL" sub="Secure Line" />
           </div>
         </div>
       </div>
@@ -224,16 +224,18 @@ export default function HeroSection() {
   );
 }
 
-function MenuLink({ index, label, sub }: { index: string, label: string; sub: string }) {
+function MenuLink({ to, index, label, sub }: { to: string; index: string; label: string; sub: string }) {
   return (
-    <div className="group cursor-pointer flex flex-col items-center md:items-start">
-      <div className="flex items-center gap-3">
-        <span className="text-[10px] font-mono text-indigo-500/50 group-hover:text-indigo-400">{index}</span>
-        <h3 className="text-4xl md:text-5xl lg:text-6xl font-extralight tracking-tighter text-white/40 group-hover:text-white transition-all duration-500 ease-out">
-          {label}
-        </h3>
+    <Link to={to}>
+      <div className="group cursor-pointer flex flex-col items-center md:items-start">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-mono text-indigo-500/50 group-hover:text-indigo-400">{index}</span>
+          <h3 className="text-4xl md:text-5xl lg:text-6xl font-extralight tracking-tighter text-white/40 group-hover:text-white transition-all duration-500 ease-out">
+            {label}
+          </h3>
+        </div>
+        <p className="text-[9px] tracking-[0.4em] text-zinc-700 mt-2 uppercase transition-colors group-hover:text-indigo-400/80">// {sub}</p>
       </div>
-      <p className="text-[9px] tracking-[0.4em] text-zinc-700 mt-2 uppercase transition-colors group-hover:text-indigo-400/80">// {sub}</p>
-    </div>
+    </Link>
   );
 }

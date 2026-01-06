@@ -9,7 +9,6 @@ function App(){
   return(
     <>
    <Hero/>
-   {/* <StackPage/> */}
    <About/>
    <TechStackVibe/>
    <ProjectsSection/>
