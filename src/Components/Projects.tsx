@@ -6,120 +6,153 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const projects = [
-  { title: "PLEXJAR", url: "https://plexjar.com/", color: "#00f2ff" },
-  { title: "WEBMIX", url: "https://webmixstudio.com/", color: "#7000ff" },
-  { title: "ARKIN", url: "https://arkin-phi.vercel.app/", color: "#ff0055" },
-  { title: "WEBSPAK", url: "https://webspak.vercel.app/", color: "#31ff5d" },
+  { title: "PLEXJAR", url: "https://plexjar.com/" },
+  { title: "WEBMIX", url: "https://webmixstudio.com/" },
+  { title: "ARKIN", url: "https://arkin-phi.vercel.app/" },
+  { title: "WEBSPAK", url: "https://webspak.vercel.app/" },
 ];
 
 const techIcons = [Cpu, Zap, Shield, Activity, Share2, Terminal, Code, Database];
 
-export default function IsolatedTechChaos() {
+export default function ControlledTechChaos() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const coreRef = useRef<HTMLDivElement>(null);
   const iconRefs = useRef<HTMLDivElement[]>([]);
   const cardRefs = useRef<HTMLDivElement[]>([]);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const explosionAudioRef = useRef<HTMLAudioElement>(null);
   const dropAudioRef = useRef<HTMLAudioElement>(null);
+  const hasUnlockedAudio = useRef(false);
+
+  // 1. Audio Unlock Logic
+  useEffect(() => {
+    const unlockAudio = () => {
+      hasUnlockedAudio.current = true;
+      window.removeEventListener("click", unlockAudio);
+      window.removeEventListener("scroll", unlockAudio);
+    };
+    window.addEventListener("click", unlockAudio);
+    window.addEventListener("scroll", unlockAudio, { once: true });
+    return () => {
+      window.removeEventListener("click", unlockAudio);
+    };
+  }, []);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // THE MASTER TIMELINE
+      // tied to scroll via scrub: true
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: "+=2000",
+          end: "+=3000", // Longer distance = more control over explosion
           pin: true,
-          scrub: false,
-          once: true,
+          scrub: 1, // This makes the animation follow your mouse scroll exactly
+          anticipatePin: 1,
         },
       });
 
-      // Optimization: Set will-change for performance
-      gsap.set(iconRefs.current, { willChange: "transform, opacity" });
-      gsap.set(cardRefs.current, { willChange: "transform, opacity" });
-      gsap.set(coreRef.current, { willChange: "transform, opacity" });
-
-      // 1. Initial State: Hide everything
-      gsap.set(iconRefs.current, { y: -500, opacity: 0, rotation: gsap.utils.random(-360, 360), scale: 1.5 });
-      gsap.set(cardRefs.current, { opacity: 0, scale: 0.8, y: 100 });
-      gsap.set(coreRef.current, { scale: 0, opacity: 0 });
-
-      // 2. The "Drop": Tech Icons fall in with improved stagger and easing
-      tl.to(iconRefs.current, {
-        y: (i) => gsap.utils.random(-150, 150), // Reduced random range for better clustering
-        x: (i) => gsap.utils.random(-250, 250),
-        opacity: 1,
-        rotation: 0,
-        scale: 1,
-        duration: 1.2, // Slightly longer for smoothness
-        stagger: 0.08, // Tighter stagger
-        ease: "elastic.out(1, 0.5)", // Smoother bounce
-        onStart: () => dropAudioRef.current?.play().catch(() => {}), // Play cute tick sound at start of drop
+      // GPU Setup
+      gsap.set([coreRef.current, ...iconRefs.current, ...cardRefs.current], {
+        willChange: "transform, opacity",
+        force3D: true,
       });
 
-      // 3. The "Suck": Icons fly into center with rotation
+      // Initial States
+      gsap.set(iconRefs.current, { y: -800, opacity: 0, scale: 2 });
+      gsap.set(cardRefs.current, { opacity: 0, scale: 0.8, y: 150 });
+      gsap.set(coreRef.current, { scale: 0, opacity: 0 });
+
+      // PHASE 1: THE DROP (Controlled by scrolling down)
       tl.to(iconRefs.current, {
+        y: () => gsap.utils.random(-150, 150),
+        x: () => gsap.utils.random(-300, 300),
+        opacity: 1,
+        rotation: () => gsap.utils.random(-45, 45),
+        scale: 1,
+        stagger: {
+          each: 0.05,
+          from: "random",
+          // The "Stones Falling" sound only plays when the drop starts
+          onStart: function() {
+            if (hasUnlockedAudio.current && dropAudioRef.current) {
+              dropAudioRef.current.volume = 0.3;
+              dropAudioRef.current.play().catch(() => {});
+            }
+          }
+        },
+        duration: 1,
+        ease: "power2.out",
+      })
+
+      // PHASE 2: VIBRATION / TENSION
+      .to(iconRefs.current, {
+        x: "+=5",
+        repeat: 3,
+        yoyo: true,
+        duration: 0.1,
+      })
+
+      // PHASE 3: THE SUCK (Icons collapse)
+      .to(iconRefs.current, {
         x: 0,
         y: 0,
-        scale: 0.2,
-        rotation: (i) => gsap.utils.random(-180, 180),
-        opacity: 0.5,
-        duration: 0.8, // Smoother transition
-        ease: "power3.in",
-        stagger: 0.05,
-      }, "-=0.2"); // Slight overlap for fluidity
+        scale: 0,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power4.in",
+      })
 
-      // Show core with pulse
-      tl.to(coreRef.current, {
+      // PHASE 4: THE CORE APPEARS
+      .to(coreRef.current, {
         scale: 1,
         opacity: 1,
         duration: 0.4,
-        ease: "power2.out",
-      }, "-=0.3");
+      })
 
-      // 4. THE EXPLOSION: With blur for dramatic effect
-      tl.to(coreRef.current, {
-        scale: 50,
+      // PHASE 5: THE EXPLOSION (Only happens when you scroll further down)
+      .to(coreRef.current, {
+        scale: 100,
         opacity: 0,
-        filter: "blur(20px)",
-        duration: 0.9, // Slightly longer for better visual
-        ease: "power4.in",
-        onStart: () => audioRef.current?.play().catch(() => {}),
-      });
+        duration: 1,
+        ease: "expo.in",
+        onStart: () => {
+          // Play the explosion sound only when this scroll point is reached
+          if (hasUnlockedAudio.current && explosionAudioRef.current) {
+            explosionAudioRef.current.volume = 0.8;
+            explosionAudioRef.current.play().catch(() => {});
+          }
+        },
+      })
 
-      // 5. THE REVEAL: Softer flash and cards snap in
-      tl.to(sectionRef.current, { backgroundColor: "#fff", duration: 0.1 }, "-=0.2")
-        .to(sectionRef.current, { backgroundColor: "#000", duration: 0.6, ease: "power2.out" });
-
-      tl.to(cardRefs.current, {
+      // PHASE 6: REVEAL CARDS
+      .to(sectionRef.current, { backgroundColor: "#fff", duration: 0.1 }, "-=0.1")
+      .to(sectionRef.current, { backgroundColor: "#000", duration: 0.5 })
+      .to(cardRefs.current, {
         opacity: 1,
         scale: 1,
         y: 0,
-        duration: 1.2,
-        stagger: 0.15,
-        ease: "elastic.out(1, 0.6)",
-      }, "-=0.4");
-      
+        stagger: 0.2,
+        duration: 1,
+        ease: "power3.out",
+      }, "-=0.2");
+
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <div className="bg-black font-black">
+    <div className="bg-black">
+      <section ref={sectionRef} className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
+        
+        {/* Audio Elements */}
+        <audio ref={dropAudioRef} src="stones-falling.mp3" preload="auto" />
+        <audio ref={explosionAudioRef} src="stones-falling.mp3" preload="auto" />
 
-      {/* PROJECT SECTION - THE ENGINE IS BOXED HERE */}
-      <section 
-        ref={sectionRef} 
-        className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
-      >
-        <audio ref={audioRef} src="explosion.mp3" preload="auto" />
-        <audio ref={dropAudioRef} src="tick.mp3" preload="auto" /> {/* Assume tick.mp3 is a cute, simple sound */}
-
-        {/* MESSY TECH ICONS CONTAINER */}
+        {/* BETTER TECH ICONS (Glow Effect) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
-          {[...Array(16)].map((_, i) => {
+          {[...Array(20)].map((_, i) => {
             const Icon = techIcons[i % techIcons.length];
             return (
               <div 
@@ -127,48 +160,35 @@ export default function IsolatedTechChaos() {
                 ref={(el) => { if (el) iconRefs.current[i] = el; }}
                 className="absolute"
               >
-                <Icon size={48} className="text-cyan-500" strokeWidth={1} />
+                <div className="relative">
+                    {/* Shadow/Glow layer for "better" look */}
+                    <Icon size={50} className="text-cyan-500 absolute blur-lg opacity-50" />
+                    <Icon size={50} className="text-white relative" strokeWidth={1} />
+                </div>
               </div>
             );
           })}
         </div>
 
-        {/* SINGULARITY CORE */}
-        <div 
-          ref={coreRef} 
-          className="absolute z-50 w-32 h-32 bg-white rounded-full blur-[2px] shadow-[0_0_150px_#fff] pointer-events-none" 
-        />
+        {/* CORE */}
+        <div ref={coreRef} className="absolute z-50 w-24 h-24 bg-white rounded-full shadow-[0_0_150px_#fff]" />
 
-        {/* PROJECTS CONTENT */}
-        <div className="relative z-10 w-full max-w-7xl px-6 py-20">
-          <div className="mb-16 text-center">
-             <h2 className="text-[12vw] leading-none italic tracking-tighter text-white uppercase drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                Works
-             </h2>
-          </div>
-
+        {/* CARDS */}
+        <div className="relative z-10 w-full max-w-6xl px-10">
+          <h2 className="text-[10vw] font-black italic text-white uppercase mb-10 tracking-tighter">Works.</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((p, i) => (
-              <div
-                key={p.title}
-                ref={(el) => { if (el) cardRefs.current[i] = el; }}
-                className="group relative"
-              >
-                <a href={p.url} target="_blank" className="block relative aspect-video bg-zinc-900 border border-white/10 group-hover:border-white/50 transition-all duration-500 overflow-hidden">
-                   <img
-                    src={`https://image.thum.io/get/width/1000/crop/800/${p.url}`}
-                    alt={p.title}
-                    className="w-full h-full object-cover grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-1000"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-                  
-                  <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
-                    <h3 className="text-5xl font-black italic text-white tracking-tighter">{p.title}</h3>
-                    <div className="flex gap-2">
-                       <Zap size={16} className="text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                       <span className="font-mono text-[10px] text-white/50 uppercase tracking-widest">Open_Link</span>
-                    </div>
-                  </div>
+              <div key={i} ref={(el) => { if (el) cardRefs.current[i] = el; }} className="group">
+                <a href={p.url} target="_blank" className="block aspect-video bg-zinc-900 border border-white/10 overflow-hidden relative">
+                   <img 
+                    src={`https://image.thum.io/get/width/1200/crop/900/${p.url}`} 
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                    alt={p.title} 
+                   />
+                   <div className="absolute bottom-5 left-5 text-white">
+                      <p className="text-xs font-mono text-cyan-400">PROJECT_0{i+1}</p>
+                      <h3 className="text-4xl font-black italic">{p.title}</h3>
+                   </div>
                 </a>
               </div>
             ))}
