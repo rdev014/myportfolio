@@ -1,4 +1,4 @@
-import  { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Cpu, Zap, Shield, Activity, Share2, Terminal, Code, Database } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -19,7 +19,6 @@ export default function ControlledTechChaos() {
   const coreRef = useRef<HTMLDivElement>(null);
   const iconRefs = useRef<HTMLDivElement[]>([]);
   const cardRefs = useRef<HTMLDivElement[]>([]);
-  const explosionAudioRef = useRef<HTMLAudioElement>(null);
   const dropAudioRef = useRef<HTMLAudioElement>(null);
   const hasUnlockedAudio = useRef(false);
 
@@ -39,15 +38,13 @@ export default function ControlledTechChaos() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // THE MASTER TIMELINE
-      // tied to scroll via scrub: true
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: "+=3000", // Longer distance = more control over explosion
+          end: "+=3000", 
           pin: true,
-          scrub: 1, // This makes the animation follow your mouse scroll exactly
+          scrub: 1, 
           anticipatePin: 1,
         },
       });
@@ -60,10 +57,10 @@ export default function ControlledTechChaos() {
 
       // Initial States
       gsap.set(iconRefs.current, { y: -800, opacity: 0, scale: 2 });
-      gsap.set(cardRefs.current, { opacity: 0, scale: 0.8, y: 150 });
+      gsap.set(cardRefs.current, { opacity: 0, scale: 0.9, y: 100 });
       gsap.set(coreRef.current, { scale: 0, opacity: 0 });
 
-      // PHASE 1: THE DROP (Controlled by scrolling down)
+      // PHASE 1: THE DROP (Audio Plays Here)
       tl.to(iconRefs.current, {
         y: () => gsap.utils.random(-150, 150),
         x: () => gsap.utils.random(-300, 300),
@@ -73,7 +70,6 @@ export default function ControlledTechChaos() {
         stagger: {
           each: 0.05,
           from: "random",
-          // The "Stones Falling" sound only plays when the drop starts
           onStart: function() {
             if (hasUnlockedAudio.current && dropAudioRef.current) {
               dropAudioRef.current.volume = 0.3;
@@ -85,7 +81,7 @@ export default function ControlledTechChaos() {
         ease: "power2.out",
       })
 
-      // PHASE 2: VIBRATION / TENSION
+      // PHASE 2: VIBRATION
       .to(iconRefs.current, {
         x: "+=5",
         repeat: 3,
@@ -93,7 +89,7 @@ export default function ControlledTechChaos() {
         duration: 0.1,
       })
 
-      // PHASE 3: THE SUCK (Icons collapse)
+      // PHASE 3: THE SUCK
       .to(iconRefs.current, {
         x: 0,
         y: 0,
@@ -110,32 +106,25 @@ export default function ControlledTechChaos() {
         duration: 0.4,
       })
 
-      // PHASE 5: THE EXPLOSION (Only happens when you scroll further down)
+      // PHASE 5: THE EXPLOSION (Audio trigger removed from here)
       .to(coreRef.current, {
         scale: 100,
         opacity: 0,
         duration: 1,
         ease: "expo.in",
-        onStart: () => {
-          // Play the explosion sound only when this scroll point is reached
-          if (hasUnlockedAudio.current && explosionAudioRef.current) {
-            explosionAudioRef.current.volume = 0.8;
-            explosionAudioRef.current.play().catch(() => {});
-          }
-        },
       })
 
       // PHASE 6: REVEAL CARDS
-      .to(sectionRef.current, { backgroundColor: "#fff", duration: 0.1 }, "-=0.1")
-      .to(sectionRef.current, { backgroundColor: "#000", duration: 0.5 })
+      .to(sectionRef.current, { backgroundColor: "#fff", duration: 0.1 }, "-=0.2")
+      .to(sectionRef.current, { backgroundColor: "#000", duration: 0.4 })
       .to(cardRefs.current, {
         opacity: 1,
         scale: 1,
         y: 0,
-        stagger: 0.2,
-        duration: 1,
+        stagger: 0.15,
+        duration: 0.8,
         ease: "power3.out",
-      }, "-=0.2");
+      }, "-=0.3");
 
     }, sectionRef);
 
@@ -146,11 +135,10 @@ export default function ControlledTechChaos() {
     <div className="bg-black">
       <section ref={sectionRef} className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
         
-        {/* Audio Elements */}
+        {/* Only Drop Audio Kept */}
         <audio ref={dropAudioRef} src="stones-falling.mp3" preload="auto" />
-        <audio ref={explosionAudioRef} src="stones-falling.mp3" preload="auto" />
 
-        {/* BETTER TECH ICONS (Glow Effect) */}
+        {/* TECH ICONS */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
           {[...Array(20)].map((_, i) => {
             const Icon = techIcons[i % techIcons.length];
@@ -161,7 +149,6 @@ export default function ControlledTechChaos() {
                 className="absolute"
               >
                 <div className="relative">
-                    {/* Shadow/Glow layer for "better" look */}
                     <Icon size={50} className="text-cyan-500 absolute blur-lg opacity-50" />
                     <Icon size={50} className="text-white relative" strokeWidth={1} />
                 </div>
@@ -178,17 +165,27 @@ export default function ControlledTechChaos() {
           <h2 className="text-[10vw] font-black italic text-white uppercase mb-10 tracking-tighter">Works.</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((p, i) => (
-              <div key={i} ref={(el) => { if (el) cardRefs.current[i] = el; }} className="group">
-                <a href={p.url} target="_blank" className="block aspect-video bg-zinc-900 border border-white/10 overflow-hidden relative">
-                   <img 
-                    src={`https://image.thum.io/get/width/1200/crop/900/${p.url}`} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                    alt={p.title} 
-                   />
-                   <div className="absolute bottom-5 left-5 text-white">
-                      <p className="text-xs font-mono text-cyan-400">PROJECT_0{i+1}</p>
-                      <h3 className="text-4xl font-black italic">{p.title}</h3>
-                   </div>
+              <div 
+                key={i} 
+                ref={(el) => { if (el) cardRefs.current[i] = el; }} 
+                className="group relative z-20"
+              >
+                <a 
+                  href={p.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block aspect-video bg-zinc-900 border border-white/10 overflow-hidden relative"
+                >
+                    <img 
+                      src={`https://image.thum.io/get/width/1200/crop/900/${p.url}`} 
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 opacity-100" 
+                      alt={p.title} 
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
+                    <div className="absolute bottom-5 left-5 text-white z-30">
+                       <p className="text-xs font-mono text-cyan-400">PROJECT_0{i+1}</p>
+                       <h3 className="text-4xl font-black italic">{p.title}</h3>
+                    </div>
                 </a>
               </div>
             ))}
