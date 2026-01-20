@@ -14,7 +14,7 @@ import {
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
 
 export default function About() {
-  const sectionRef = useRef<HTMLSectionElement>(null);
+  const sectionRef = useRef<HTMLOptionElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
