@@ -1,4 +1,5 @@
-import { About } from "./Components/About"
+
+import About from "./Components/About"
 import { Contact } from "./Components/Contact"
 import ProjectsSection from "./Components/Projects"
 import TechStackVibe from "./Components/TechSpreadSection"
